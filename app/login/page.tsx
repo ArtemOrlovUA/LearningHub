@@ -3,9 +3,29 @@
 import supabase from '@/app/utils/client';
 import LogoutButton from '@/app/_components/LogoutButton';
 import { useUser } from '../utils/useUser';
+import { useState, useEffect } from 'react';
 
 export default function LoginPage() {
   const { user, loading } = useUser();
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (loading) {
+      timer = setTimeout(() => {
+        setShowLoadingIndicator(true);
+      }, 300);
+    } else {
+      setShowLoadingIndicator(false);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      if (!loading) {
+        setShowLoadingIndicator(false);
+      }
+    };
+  }, [loading]);
 
   const handleSignInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -20,7 +40,7 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
+  if (showLoadingIndicator) {
     return (
       <div
         style={{
