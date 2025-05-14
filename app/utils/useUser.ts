@@ -13,12 +13,23 @@ export function useUser() {
 
   useEffect(() => {
     const getCurrentUser = async () => {
-      setLoading(true);
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-      setUser(currentUser);
-      setLoading(false);
+      try {
+        const {
+          data: { user: currentUser },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error('Error getting current user:', error);
+          // Potentially set user to null or handle error state
+        }
+        setUser(currentUser);
+      } catch (e) {
+        console.error('Exception in getCurrentUser:', e);
+      } finally {
+        // This will be the primary place to set loading to false after initial check.
+        setLoading(false);
+      }
     };
 
     getCurrentUser();
@@ -26,15 +37,15 @@ export function useUser() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null);
-
-        if (loading) setLoading(false);
+        // If an auth event occurs (login/logout), we are no longer in the initial loading phase.
+        setLoading(false);
       },
     );
 
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [loading]);
+  }, []); // Empty dependency array: run only once on mount
 
   return { user, loading };
 }
