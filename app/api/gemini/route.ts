@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@/app/utils/server';
+import { cookies } from 'next/headers';
+import { v4 as uuidv4 } from 'uuid';
+
+interface FlashcardRecord {
+  user_id: string;
+  pack_id: string;
+  question: string;
+  answer: string;
+  created_at: string;
+}
 
 const apiKey = process.env.API_KEY;
 const modelName = process.env.MODEL_NAME || 'gemini-1.0-pro';
-
-if (!apiKey) {
-  console.error('API_KEY is not defined in environment variables.');
-}
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: modelName }) : null;
@@ -44,7 +51,7 @@ Question|||||Answer
 
 7. **Clean Spacing**: Ensure there are no double spaces (e.g., "  ") in questions or answers.
 
-8. **Limit Quantity**: Generate a maximum of 15 flashcards.
+8. **Limit Quantity**: Generate a maximum of {{MAX_FLASHCARDS}} flashcards.
 
 **Example transformation:**
 Input sentence: "Isaac Newton formulated the law of universal gravitation in 1687."
@@ -58,6 +65,19 @@ Now, here is the user's text. Read it carefully and output only the array of fla
 <<<USER_TEXT_START>>>`;
 
 export async function POST(request: Request) {
+  const cookieStore = cookies();
+  const supabase = await createClient(cookieStore);
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    console.error('Auth error or no user:', authError);
+    return NextResponse.json({ error: 'User not authenticated.' }, { status: 401 });
+  }
+
   if (!model || !genAI) {
     return NextResponse.json(
       { error: 'Gemini AI client not initialized. Check API_KEY.' },
@@ -72,7 +92,59 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No prompt provided.' }, { status: 400 });
     }
 
+    const currentUserId = user.id;
+
+    let fcLimit = 120;
+    let fcCurrent = 0;
+    let numFlashcardsToRequest = 15;
+
+    const { data: userLimitData, error: userLimitError } = await supabase
+      .from('user_limits')
+      .select('fc_limit, fc_current')
+      .eq('user_id', currentUserId)
+      .single();
+
+    if (userLimitError && userLimitError.code !== 'PGRST116') {
+      console.error('Error fetching user limits:', userLimitError);
+      return NextResponse.json(
+        { error: 'Failed to fetch user limits.', details: userLimitError.message },
+        { status: 500 },
+      );
+    }
+
+    if (userLimitData) {
+      fcLimit = userLimitData.fc_limit;
+      fcCurrent = userLimitData.fc_current;
+    } else {
+      const { error: insertError } = await supabase
+        .from('user_limits')
+        .insert({ user_id: currentUserId });
+
+      if (insertError) {
+        console.error('Error creating user limit record:', insertError);
+        return NextResponse.json(
+          { error: 'Failed to initialize user limits.', details: insertError.message },
+          { status: 500 },
+        );
+      }
+    }
+
+    const availableToGenerate = fcLimit - fcCurrent;
+    numFlashcardsToRequest = Math.min(15, availableToGenerate);
+
+    if (numFlashcardsToRequest <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            'You have reached your flashcard generation limit. Please try again later or upgrade your plan.',
+        },
+        { status: 403 },
+      );
+    }
+
     let instructions = FLASHCARD_INSTRUCTIONS;
+    instructions = instructions.replace('{{MAX_FLASHCARDS}}', numFlashcardsToRequest.toString());
+
     if (detailed) {
       instructions = instructions.replace(
         '* Do **not** include any extra commentary, bullet points, numbering, or markdown.',
@@ -91,6 +163,7 @@ ${prompt}
     const result = await model.generateContent(customPrompt);
     const rawTextFromAI = await result.response.text();
     let cleanedTextForClient;
+    const flashcardsToSave: Omit<FlashcardRecord, 'pack_id'>[] = [];
 
     try {
       let processedText = rawTextFromAI
@@ -104,6 +177,7 @@ ${prompt}
       }
 
       const flashcardsArray: string[] = JSON.parse(processedText);
+      const actualGeneratedCount = flashcardsArray.length;
 
       const cleanedFlashcardsArray = flashcardsArray.map((fcString) => {
         const parts = fcString.split('|||||');
@@ -111,12 +185,49 @@ ${prompt}
           const question = parts[0].trim();
           let answer = parts[1].trim();
           answer = answer.replace(/\s\s+/g, ' ');
+          flashcardsToSave.push({
+            user_id: currentUserId,
+            question: question,
+            answer: answer,
+            created_at: new Date().toISOString(),
+          });
           return `${question}|||||${answer}`;
         }
         return fcString;
       });
 
       cleanedTextForClient = JSON.stringify(cleanedFlashcardsArray);
+
+      if (flashcardsToSave.length > 0) {
+        const packId = `pack-${uuidv4()}`;
+        const recordsToInsert: FlashcardRecord[] = flashcardsToSave.map((fc) => ({
+          ...fc,
+          pack_id: packId,
+        }));
+
+        const { error: dbError } = await supabase.from('flashcards').insert(recordsToInsert);
+
+        if (dbError) {
+          console.error('Supabase insert error:', dbError);
+          return NextResponse.json(
+            { error: 'Failed to save flashcards to database.', details: dbError.message },
+            { status: 500 },
+          );
+        } else {
+          console.log('Flashcards saved to Supabase successfully.');
+          const newFcCurrent = fcCurrent + actualGeneratedCount;
+          const { error: updateLimitError } = await supabase
+            .from('user_limits')
+            .update({ fc_current: newFcCurrent })
+            .eq('user_id', currentUserId);
+
+          if (updateLimitError) {
+            console.error('Failed to update user fc_current:', updateLimitError);
+          } else {
+            console.log(`User ${currentUserId} fc_current updated to ${newFcCurrent}`);
+          }
+        }
+      }
     } catch (parseError) {
       console.error(
         'Error parsing or cleaning AI response:',
@@ -124,7 +235,6 @@ ${prompt}
         '\nRaw AI Response:\n',
         rawTextFromAI,
       );
-
       cleanedTextForClient = rawTextFromAI;
     }
 

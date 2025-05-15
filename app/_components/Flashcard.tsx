@@ -1,4 +1,3 @@
-// app/_components/Flashcard.tsx
 'use client';
 
 import { useState } from 'react';

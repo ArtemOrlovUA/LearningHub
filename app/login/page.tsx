@@ -4,10 +4,12 @@ import supabase from '@/app/utils/client';
 import LogoutButton from '@/app/_components/LogoutButton';
 import { useUser } from '../utils/useUser';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const { user, loading } = useUser();
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+  console.log(user);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -68,6 +70,7 @@ export default function LoginPage() {
           <h1>Welcome</h1>
           <p>Email: {user.email}</p>
           <LogoutButton />
+          <Link href="/learn">Learn</Link>
         </>
       ) : (
         <>

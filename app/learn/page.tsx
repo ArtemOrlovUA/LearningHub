@@ -1,10 +1,10 @@
-// app/learn/page.tsx
 'use client';
 
 import { useState } from 'react';
 import FlashList from '@/app/_components/FlashList';
 import LogoutButton from '../_components/LogoutButton';
 import { useUser } from '../utils/useUser';
+import { useUserLimits } from '../utils/useLimits';
 
 interface FlashcardData {
   id: string | number;
@@ -13,7 +13,8 @@ interface FlashcardData {
 }
 
 export default function LearnPage() {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
+  const { fc_limit, fc_current, loading, error: limitsError, refetchLimits } = useUserLimits();
   const [prompt, setPrompt] = useState('');
   const [isDetailed, setIsDetailed] = useState(false);
   const [flashcards, setFlashcards] = useState<FlashcardData[]>([]);
@@ -23,6 +24,11 @@ export default function LearnPage() {
   const handleGenerateFlashcards = async () => {
     if (!prompt.trim()) {
       setError('Please enter some text to generate flashcards.');
+      return;
+    }
+    if (!user || !user.id) {
+      setError('User not found. Please log in again.');
+      setIsLoading(false);
       return;
     }
     setIsLoading(true);
@@ -35,7 +41,7 @@ export default function LearnPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt, detailed: isDetailed }),
+        body: JSON.stringify({ prompt, detailed: isDetailed, userId: user.id }),
       });
 
       if (!response.ok) {
@@ -55,6 +61,10 @@ export default function LearnPage() {
         };
       });
       setFlashcards(formattedFlashcards);
+
+      if (refetchLimits) {
+        await refetchLimits();
+      }
     } catch (err: unknown) {
       console.error('Failed to generate flashcards:', err);
       if (err instanceof Error) {
@@ -69,11 +79,33 @@ export default function LearnPage() {
 
   return (
     <div style={{ maxWidth: '700px', margin: '2rem auto', padding: '0 1rem' }}>
-      <>
-        <h1>Welcome</h1>
-        <p>Email: {user?.email}</p>
-        <LogoutButton />
-      </>
+      {!userLoading ? (
+        <div>
+          <h1>Welcome</h1>
+          <p>Email: {user?.email}</p>
+          <LogoutButton />
+        </div>
+      ) : (
+        <div>
+          <p>Loading...</p>
+        </div>
+      )}
+      {!loading ? (
+        <div>
+          <h1>Limits</h1>
+          {limitsError && <p>Error: {limitsError.message}</p>}
+          {fc_limit && fc_current && (
+            <p>
+              Used: {fc_current} / Limit: {fc_limit}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div>
+          <h1>Limits</h1>
+          <p>Loading...</p>
+        </div>
+      )}
       <h1
         style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '2.5rem', color: '#2D3748' }}>
         Generate Flashcards
