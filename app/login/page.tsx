@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const { user, loading } = useUser();
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
-  console.log(user);
+  const [limitCheckInitiated, setLimitCheckInitiated] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -28,6 +28,49 @@ export default function LoginPage() {
       }
     };
   }, [loading]);
+
+  useEffect(() => {
+    const ensureUserLimits = async () => {
+      if (user && !loading && !limitCheckInitiated) {
+        setLimitCheckInitiated(true);
+        try {
+          console.log(`Checking/ensuring user_limits for ${user.id}`);
+          const { data: existingLimits, error: fetchError } = await supabase
+            .from('user_limits')
+            .select('user_id')
+            .eq('user_id', user.id)
+            .single();
+
+          if (fetchError && fetchError.code === 'PGRST116') {
+            console.log(`No user_limits found for ${user.id}, creating one.`);
+            const { error: insertError } = await supabase
+              .from('user_limits')
+              .insert({ user_id: user.id });
+
+            if (insertError) {
+              console.error('Error creating user_limits record:', insertError);
+            } else {
+              console.log(`user_limits record created for ${user.id}.`);
+            }
+          } else if (fetchError) {
+            console.error('Error fetching user_limits on login page:', fetchError);
+          } else if (existingLimits) {
+            console.log(`user_limits record already exists for ${user.id}.`);
+          }
+        } catch (e) {
+          console.error('Unexpected error in ensureUserLimits on login page:', e);
+        }
+      }
+    };
+
+    ensureUserLimits();
+  }, [user, loading, limitCheckInitiated]);
+
+  useEffect(() => {
+    if (!user) {
+      setLimitCheckInitiated(false);
+    }
+  }, [user]);
 
   const handleSignInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({

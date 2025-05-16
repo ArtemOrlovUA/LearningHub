@@ -94,45 +94,43 @@ export async function POST(request: Request) {
 
     const currentUserId = user.id;
 
-    let fcLimit = 120;
-    let fcCurrent = 0;
-    let numFlashcardsToRequest = 15;
-
     const { data: userLimitData, error: userLimitError } = await supabase
       .from('user_limits')
       .select('fc_limit, fc_current')
       .eq('user_id', currentUserId)
       .single();
 
-    if (userLimitError && userLimitError.code !== 'PGRST116') {
-      console.error('Error fetching user limits:', userLimitError);
+    if (userLimitError) {
+      console.error('Error fetching user limits in API route:', userLimitError);
       return NextResponse.json(
-        { error: 'Failed to fetch user limits.', details: userLimitError.message },
+        {
+          error:
+            'Failed to fetch user limits. The record may not exist or another error occurred. Please try logging out and back in, or contact support.',
+          details: userLimitError.message,
+        },
         { status: 500 },
       );
     }
 
-    if (userLimitData) {
-      fcLimit = userLimitData.fc_limit;
-      fcCurrent = userLimitData.fc_current;
-    } else {
-      const { error: insertError } = await supabase
-        .from('user_limits')
-        .insert({ user_id: currentUserId });
-
-      if (insertError) {
-        console.error('Error creating user limit record:', insertError);
-        return NextResponse.json(
-          { error: 'Failed to initialize user limits.', details: insertError.message },
-          { status: 500 },
-        );
-      }
+    if (!userLimitData) {
+      console.error(
+        `User limit record not found for user ${currentUserId} in API route, though it should have been created on login and no specific fetch error was caught.`,
+      );
+      return NextResponse.json(
+        {
+          error:
+            'User limit configuration missing unexpectedly. Please try logging out and back in, or contact support.',
+        },
+        { status: 500 },
+      );
     }
 
-    const availableToGenerate = fcLimit - fcCurrent;
-    numFlashcardsToRequest = Math.min(15, availableToGenerate);
+    const fcLimit: number = userLimitData.fc_limit;
+    const fcCurrent: number = userLimitData.fc_current;
 
-    if (numFlashcardsToRequest <= 0) {
+    const availableToGenerate = fcLimit - fcCurrent;
+
+    if (availableToGenerate <= 0) {
       return NextResponse.json(
         {
           error:
@@ -143,7 +141,9 @@ export async function POST(request: Request) {
     }
 
     let instructions = FLASHCARD_INSTRUCTIONS;
-    instructions = instructions.replace('{{MAX_FLASHCARDS}}', numFlashcardsToRequest.toString());
+    const geminiPromptMaxFlashcards = availableToGenerate >= 15 ? 15 : availableToGenerate;
+
+    instructions = instructions.replace('{{MAX_FLASHCARDS}}', geminiPromptMaxFlashcards.toString());
 
     if (detailed) {
       instructions = instructions.replace(
@@ -162,8 +162,7 @@ ${prompt}
 
     const result = await model.generateContent(customPrompt);
     const rawTextFromAI = await result.response.text();
-    let cleanedTextForClient;
-    const flashcardsToSave: Omit<FlashcardRecord, 'pack_id'>[] = [];
+    let cleanedTextForClient: string;
 
     try {
       let processedText = rawTextFromAI
@@ -177,30 +176,37 @@ ${prompt}
       }
 
       const flashcardsArray: string[] = JSON.parse(processedText);
-      const actualGeneratedCount = flashcardsArray.length;
+      const actualGeneratedByGemini = flashcardsArray.length;
 
-      const cleanedFlashcardsArray = flashcardsArray.map((fcString) => {
+      const numToProcessAndSave = Math.min(actualGeneratedByGemini, availableToGenerate);
+
+      const finalFlashcardsForDB: Omit<FlashcardRecord, 'pack_id'>[] = [];
+      const finalFlashcardsForClient: string[] = [];
+
+      for (let i = 0; i < numToProcessAndSave; i++) {
+        const fcString = flashcardsArray[i];
+        if (!fcString) continue;
+
         const parts = fcString.split('|||||');
         if (parts.length === 2) {
           const question = parts[0].trim();
           let answer = parts[1].trim();
           answer = answer.replace(/\s\s+/g, ' ');
-          flashcardsToSave.push({
+          finalFlashcardsForDB.push({
             user_id: currentUserId,
             question: question,
             answer: answer,
             created_at: new Date().toISOString(),
           });
-          return `${question}|||||${answer}`;
+          finalFlashcardsForClient.push(`${question}|||||${answer}`);
         }
-        return fcString;
-      });
+      }
 
-      cleanedTextForClient = JSON.stringify(cleanedFlashcardsArray);
+      cleanedTextForClient = JSON.stringify(finalFlashcardsForClient);
 
-      if (flashcardsToSave.length > 0) {
+      if (finalFlashcardsForDB.length > 0) {
         const packId = `pack-${uuidv4()}`;
-        const recordsToInsert: FlashcardRecord[] = flashcardsToSave.map((fc) => ({
+        const recordsToInsert: FlashcardRecord[] = finalFlashcardsForDB.map((fc) => ({
           ...fc,
           pack_id: packId,
         }));
@@ -215,7 +221,7 @@ ${prompt}
           );
         } else {
           console.log('Flashcards saved to Supabase successfully.');
-          const newFcCurrent = fcCurrent + actualGeneratedCount;
+          const newFcCurrent = fcCurrent + finalFlashcardsForDB.length;
           const { error: updateLimitError } = await supabase
             .from('user_limits')
             .update({ fc_current: newFcCurrent })

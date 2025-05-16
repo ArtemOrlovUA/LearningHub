@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import supabase from '@/app/utils/client';
 import { useUser } from '@/app/utils/useUser';
+import { DEFAULT_LIMIT, DEFAULT_LIMIT_START } from '@/app-config';
 
 interface UserLimits {
   fc_limit: number;
@@ -49,8 +50,10 @@ export function useUserLimits(): UseUserLimitsReturn {
         .single();
 
       if (supabaseError) {
+        console.log('supabaseError', supabaseError);
+
         if (supabaseError.code === 'PGRST116') {
-          throw new Error('User limit record not found. API should create it on first use.');
+          throw new Error('Could not find user limits. Please contact support.');
         } else {
           throw supabaseError;
         }
@@ -60,7 +63,8 @@ export function useUserLimits(): UseUserLimitsReturn {
         setFcLimitState(data.fc_limit);
         setFcCurrentState(data.fc_current);
       } else {
-        throw new Error('No data returned for user limits, and no specific error code.');
+        setFcLimitState(DEFAULT_LIMIT);
+        setFcCurrentState(DEFAULT_LIMIT_START);
       }
     } catch (err) {
       console.error('Error fetching user limits:', err);
