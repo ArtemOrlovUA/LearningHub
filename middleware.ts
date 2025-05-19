@@ -66,6 +66,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (!user && pathname.startsWith('/my-flashcards')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
   if (user && pathname.startsWith('/login')) {
     const url = request.nextUrl.clone();
     url.pathname = '/learn';

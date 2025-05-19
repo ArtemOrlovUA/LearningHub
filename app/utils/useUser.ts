@@ -9,7 +9,7 @@ import supabase from '@/app/utils/client';
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getCurrentUser = async () => {

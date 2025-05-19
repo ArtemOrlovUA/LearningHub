@@ -13,8 +13,8 @@ interface FlashListProps {
 export default function FlashList({ flashcards }: FlashListProps) {
   if (!flashcards || flashcards.length === 0) {
     return (
-      <div style={{ textAlign: 'center', color: '#718096', marginTop: '2rem' }}>
-        No flashcards to display.
+      <div className="text-center text-gray-500 mt-8">
+        No flashcards to display. Generate some flashcards to get started!
       </div>
     );
   }

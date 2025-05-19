@@ -6,6 +6,7 @@ import LogoutButton from '../_components/LogoutButton';
 import { useUser } from '../utils/useUser';
 import { useUserLimits } from '../utils/useLimits';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
+import Link from 'next/link';
 
 interface FlashcardData {
   id: string | number;
@@ -30,6 +31,7 @@ export default function LearnPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pdfJsApi, setPdfJsApi] = useState<typeof import('pdfjs-dist') | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   useEffect(() => {
     const initPdfJs = async () => {
@@ -170,71 +172,72 @@ export default function LearnPage() {
     }
   };
 
+  if (isLoggingOut) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <h2 className="text-xl font-semibold text-center">Виконується вихід...</h2>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: '700px', margin: '2rem auto', padding: '0 1rem' }}>
+    <div className="max-w-2xl mx-auto my-8 px-4">
       {!userLoading ? (
-        <div>
-          <h1>Welcome</h1>
-          <p>Email: {user?.email}</p>
-          <LogoutButton />
+        <div className="mb-8 p-4 border border-gray-200 rounded-lg shadow-sm">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-2">
+            Welcome, {user?.user_metadata?.full_name}
+          </h1>
+          <p className="text-gray-600 mb-3">Email: {user?.email}</p>
+          <div className="flex space-x-4">
+            <Link
+              href="/my-flashcards"
+              className="text-blue-600 hover:text-blue-700 font-medium py-2 px-3 rounded-md border border-blue-600 hover:bg-blue-50 transition-colors">
+              View my flashcards
+            </Link>
+            <LogoutButton setIsLoggingOut={setIsLoggingOut} />
+          </div>
         </div>
       ) : (
-        <div>
-          <p>Loading...</p>
+        <div className="mb-8 p-4 text-center">
+          <p className="text-gray-500">Loading user data...</p>
         </div>
       )}
       {!limitsLoading ? (
-        <div>
-          <h1>Limits</h1>
-          {limitsError && <p>Error: {limitsError.message}</p>}
+        <div className="mb-8 p-4 border border-gray-200 rounded-lg shadow-sm">
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">Limits</h1>
+          {limitsError && <p className="text-red-500">Error: {limitsError.message}</p>}
           {fc_limit !== undefined && fc_current !== undefined && !limitsError && (
-            <p>
+            <p className="text-gray-700">
               Used: {fc_current} / Limit: {fc_limit}
             </p>
           )}
         </div>
       ) : (
-        <div>
-          <h1>Limits</h1>
-          <p>Loading...</p>
+        <div className="mb-8 p-4 text-center">
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">Limits</h1>
+          <p className="text-gray-500">Loading limits...</p>
         </div>
       )}
 
-      {limitsError ? (
-        <div
-          style={{
-            marginTop: '2rem',
-            color: '#E53E3E',
-            backgroundColor: '#FFF5F5',
-            border: '1px solid #FC8181',
-            padding: '20px',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}>
-          <h2>Error Loading Flashcard Generation Feature</h2>
+      {isLoggingOut ? (
+        <div className="mt-8 p-5 text-center text-gray-700 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold">Виконується вихід...</h2>
+        </div>
+      ) : limitsError ? (
+        <div className="mt-8 p-5 text-center bg-red-50 border border-red-300 text-red-700 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-2">Error Loading Flashcard Generation Feature</h2>
           <p>{limitsError.message}</p>
           <p>Please try refreshing the page. If the problem persists, contact support.</p>
         </div>
       ) : (
         <>
-          <h1
-            style={{
-              textAlign: 'center',
-              marginBottom: '2rem',
-              fontSize: '2.5rem',
-              color: '#2D3748',
-            }}>
-            Generate Flashcards
-          </h1>
+          <h1 className="text-center mb-8 text-4xl font-bold text-gray-800">Generate Flashcards</h1>
           <div
-            style={{
-              position: 'relative',
-              marginBottom: '1.5rem',
-              border: isDraggingOver ? '2px dashed #4A90E2' : '1px solid transparent',
-              borderRadius: '8px',
-              backgroundColor: isDraggingOver ? '#f0f8ff' : 'transparent',
-              transition: 'border-color 0.2s ease, background-color 0.2s ease',
-            }}
+            className={`relative mb-6 rounded-lg transition-all duration-200 ease-in-out ${
+              isDraggingOver
+                ? 'border-2 border-dashed border-blue-500 bg-blue-50'
+                : 'border border-transparent'
+            }`}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -244,108 +247,44 @@ export default function LearnPage() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Enter text or drop a PDF file here to create flashcards..."
               rows={6}
-              style={{
-                width: '100%',
-                padding: '12px 15px',
-                fontSize: '1rem',
-                border: '1px solid #CBD5E0',
-                borderRadius: '8px',
-                boxSizing: 'border-box',
-                resize: 'vertical',
-                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.07)',
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-                opacity: isDraggingOver ? 0.5 : 1,
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#4A90E2';
-                e.target.style.boxShadow = '0 0 0 3px rgba(74, 144, 226, 0.2)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#CBD5E0';
-                e.target.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.07)';
-              }}
+              className={`w-full p-3 text-base border border-gray-300 rounded-lg box-border resize-vertical shadow-inner focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 ease-in-out ${
+                isDraggingOver ? 'opacity-50' : 'opacity-100'
+              }`}
               disabled={isLoading}
             />
             {isDraggingOver && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                  color: '#2D3748',
-                  pointerEvents: 'none',
-                  borderRadius: 'inherit',
-                }}>
-                <p style={{ margin: 0, fontSize: '1.2em', fontWeight: 'bold' }}>
-                  Drag and drop files here
-                </p>
-                <p style={{ margin: '0.5em 0 0 0', fontSize: '0.9em' }}>
-                  only PDF-files are supported
-                </p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-800 pointer-events-none rounded-lg">
+                <p className="m-0 text-lg font-bold">Drag and drop files here</p>
+                <p className="mt-2 text-sm">only PDF-files are supported</p>
               </div>
             )}
           </div>
-          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center' }}>
+          <div className="mb-6 flex items-center">
             <input
               type="checkbox"
               id="detailed"
               checked={isDetailed}
               onChange={(e) => setIsDetailed(e.target.checked)}
-              style={{ marginRight: '0.5rem', width: '16px', height: '16px', cursor: 'pointer' }}
+              className="mr-2 h-4 w-4 cursor-pointer text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label
-              htmlFor="detailed"
-              style={{ fontSize: '1rem', color: '#4A5568', cursor: 'pointer' }}>
+            <label htmlFor="detailed" className="text-base text-gray-700 cursor-pointer">
               Provide detailed answers
             </label>
           </div>
           <button
             onClick={handleGenerateFlashcards}
             disabled={isLoading}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '12px 20px',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-              color: '#fff',
-              backgroundColor: isLoading ? '#A0AEC0' : '#4A90E2',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading) e.currentTarget.style.backgroundColor = '#357ABD';
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoading) e.currentTarget.style.backgroundColor = '#4A90E2';
-            }}>
+            className="block w-full py-3 px-5 text-lg font-semibold text-white rounded-lg transition-colors duration-200 ease-in-out bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
             {isLoading ? 'Generating...' : 'Generate Flashcards'}
           </button>
 
           {error && (
-            <div
-              style={{
-                marginTop: '1.5rem',
-                color: '#E53E3E',
-                backgroundColor: '#FFF5F5',
-                border: '1px solid #FC8181',
-                padding: '10px',
-                borderRadius: '6px',
-              }}>
+            <div className="mt-6 p-3 bg-red-50 border border-red-300 text-red-700 rounded-md">
               Error: {error}
             </div>
           )}
 
-          <div style={{ marginTop: '2.5rem' }}>
+          <div className="mt-10">
             <FlashList flashcards={flashcards} />
           </div>
         </>

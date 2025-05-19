@@ -13,7 +13,7 @@ interface FlashcardRecord {
 }
 
 const apiKey = process.env.API_KEY;
-const modelName = process.env.MODEL_NAME || 'gemini-1.0-pro';
+const modelName = process.env.MODEL_NAME || 'gemini-2.0-flash';
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: modelName }) : null;

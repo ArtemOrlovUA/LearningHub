@@ -9,7 +9,7 @@ export default function Home() {
         you&apos;re a student, a professional, or just someone who loves to learn, you&apos;ve come
         to the right place.
       </p>
-      <Link href="/login">Login</Link>
+      <Link href="/login">Start Learning</Link>
     </div>
   );
 }

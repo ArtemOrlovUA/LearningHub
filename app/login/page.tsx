@@ -1,15 +1,14 @@
 'use client';
 
 import supabase from '@/app/utils/client';
-import LogoutButton from '@/app/_components/LogoutButton';
 import { useUser } from '../utils/useUser';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const { user, loading } = useUser();
-  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
-  const [limitCheckInitiated, setLimitCheckInitiated] = useState(false);
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState<boolean>(false);
+  const [limitCheckInitiated, setLimitCheckInitiated] = useState<boolean>(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -34,8 +33,7 @@ export default function LoginPage() {
       if (user && !loading && !limitCheckInitiated) {
         setLimitCheckInitiated(true);
         try {
-          console.log(`Checking/ensuring user_limits for ${user.id}`);
-          const { data: existingLimits, error: fetchError } = await supabase
+          const { error: fetchError } = await supabase
             .from('user_limits')
             .select('user_id')
             .eq('user_id', user.id)
@@ -49,13 +47,9 @@ export default function LoginPage() {
 
             if (insertError) {
               console.error('Error creating user_limits record:', insertError);
-            } else {
-              console.log(`user_limits record created for ${user.id}.`);
             }
           } else if (fetchError) {
             console.error('Error fetching user_limits on login page:', fetchError);
-          } else if (existingLimits) {
-            console.log(`user_limits record already exists for ${user.id}.`);
           }
         } catch (e) {
           console.error('Unexpected error in ensureUserLimits on login page:', e);
@@ -76,7 +70,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/learn`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/learn`,
       },
     });
 
@@ -86,41 +80,26 @@ export default function LoginPage() {
   };
 
   if (showLoadingIndicator) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-        }}>
-        Loading...
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-      }}>
+    <div className="flex flex-col items-center justify-center h-screen">
       {user ? (
         <>
-          <h1>Welcome</h1>
-          <p>Email: {user.email}</p>
-          <LogoutButton />
-          <Link href="/learn">Learn</Link>
+          <h1 className="text-2xl font-semibold mb-4">Welcome</h1>
+          <p className="mb-2">Email: {user.email}</p>
+
+          <Link href="/learn" className="mt-4 text-blue-600 hover:underline">
+            Learn
+          </Link>
         </>
       ) : (
         <>
-          <h1>Login</h1>
+          <h1 className="text-3xl font-bold mb-8">Login</h1>
           <button
             onClick={handleSignInWithGoogle}
-            style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
+            className="px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-150">
             Sign in with Google
           </button>
         </>
