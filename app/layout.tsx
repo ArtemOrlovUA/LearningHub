@@ -10,7 +10,8 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: 'LearningHub',
-  description: 'LearningHub is a platform for learning and sharing knowledge',
+  description: 'Your ultimate destination for learning.',
+  icons: [{ url: '/logo-main.png', type: 'image/png' }],
 };
 
 export default function RootLayout({
@@ -20,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sora.variable} antialiased`}>{children}</body>
+      <body className={`${sora.variable} antialiased bg-black`}>{children}</body>
     </html>
   );
 }

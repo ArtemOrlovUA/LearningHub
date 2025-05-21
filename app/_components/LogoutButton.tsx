@@ -15,17 +15,14 @@ export default function LogoutButton({ setIsLoggingOut }: LogoutButtonProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    setIsLoggingOut(true); // Indicate that logout process has started
+    setIsLoggingOut(true);
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      // If sign-out fails, log the error and refresh the current page.
       console.error('Error logging out:', error.message);
       router.refresh();
-      setIsLoggingOut(false); // Reset logging out state if refresh doesn't unmount
+      setIsLoggingOut(false);
     } else {
-      // If sign-out is successful, redirect the user to the login page.
-      // setIsLoggingOut(false) is not strictly necessary here as the component will unmount on redirect.
       router.push('/login');
     }
   };
@@ -33,16 +30,7 @@ export default function LogoutButton({ setIsLoggingOut }: LogoutButtonProps) {
   return (
     <button
       onClick={handleLogout}
-      style={{
-        padding: '10px 20px',
-        fontSize: '16px',
-        cursor: 'pointer',
-        backgroundColor: '#f44336',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        width: '6rem',
-      }}>
+      className="py-2 px-4 text-base cursor-pointer text-red-500 border border-red-500 hover:bg-red-500 hover:text-white rounded w-24 transition-colors duration-150 ease-in-out">
       Logout
     </button>
   );

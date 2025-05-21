@@ -80,26 +80,30 @@ export default function LoginPage() {
   };
 
   if (showLoadingIndicator) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-black text-slate-100">
+        Loading...
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-slate-100">
       {user ? (
         <>
-          <h1 className="text-2xl font-semibold mb-4">Welcome</h1>
-          <p className="mb-2">Email: {user.email}</p>
+          <h1 className="text-2xl font-semibold mb-4 text-white">Welcome</h1>
+          <p className="mb-2 text-slate-300">Email: {user.email}</p>
 
-          <Link href="/learn" className="mt-4 text-blue-600 hover:underline">
+          <Link href="/learn" className="mt-4 text-sky-400 hover:text-sky-300 hover:underline">
             Learn
           </Link>
         </>
       ) : (
         <>
-          <h1 className="text-3xl font-bold mb-8">Login</h1>
+          <h1 className="text-3xl font-bold mb-8 text-white">Login</h1>
           <button
             onClick={handleSignInWithGoogle}
-            className="px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-150">
+            className="px-6 py-3 bg-white text-black text-lg font-medium rounded-md shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors duration-150">
             Sign in with Google
           </button>
         </>
