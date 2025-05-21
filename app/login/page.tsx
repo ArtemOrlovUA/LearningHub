@@ -8,7 +8,6 @@ import Link from 'next/link';
 export default function LoginPage() {
   const { user, loading } = useUser();
   const [showLoadingIndicator, setShowLoadingIndicator] = useState<boolean>(false);
-  const [limitCheckInitiated, setLimitCheckInitiated] = useState<boolean>(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -27,44 +26,6 @@ export default function LoginPage() {
       }
     };
   }, [loading]);
-
-  useEffect(() => {
-    const ensureUserLimits = async () => {
-      if (user && !loading && !limitCheckInitiated) {
-        setLimitCheckInitiated(true);
-        try {
-          const { error: fetchError } = await supabase
-            .from('user_limits')
-            .select('user_id')
-            .eq('user_id', user.id)
-            .single();
-
-          if (fetchError && fetchError.code === 'PGRST116') {
-            console.log(`No user_limits found for ${user.id}, creating one.`);
-            const { error: insertError } = await supabase
-              .from('user_limits')
-              .insert({ user_id: user.id });
-
-            if (insertError) {
-              console.error('Error creating user_limits record:', insertError);
-            }
-          } else if (fetchError) {
-            console.error('Error fetching user_limits on login page:', fetchError);
-          }
-        } catch (e) {
-          console.error('Unexpected error in ensureUserLimits on login page:', e);
-        }
-      }
-    };
-
-    ensureUserLimits();
-  }, [user, loading, limitCheckInitiated]);
-
-  useEffect(() => {
-    if (!user) {
-      setLimitCheckInitiated(false);
-    }
-  }, [user]);
 
   const handleSignInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({

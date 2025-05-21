@@ -57,8 +57,45 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
+
+  if (user && pathname.startsWith('/learn')) {
+    try {
+      const { error: fetchLimitsError } = await supabase
+        .from('user_limits')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchLimitsError && fetchLimitsError.code === 'PGRST116') {
+        console.log(`No user_limits found for user, creating one.`);
+        const { error: insertLimitsError } = await supabase
+          .from('user_limits')
+          .insert({ user_id: user.id });
+
+        if (insertLimitsError) {
+          console.error(
+            'Middleware: Error creating user_limits record:',
+            insertLimitsError.message,
+          );
+        }
+      } else if (fetchLimitsError) {
+        console.error('Middleware: Error fetching user_limits:', fetchLimitsError.message);
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error(
+          'Middleware: Unexpected error in ensureUserLimits logic (on /learn):',
+          e.message,
+        );
+      } else {
+        console.error(
+          'Middleware: Unexpected error in ensureUserLimits logic (on /learn):',
+          String(e),
+        );
+      }
+    }
+  }
 
   if (!user && pathname.startsWith('/learn')) {
     const url = request.nextUrl.clone();

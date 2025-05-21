@@ -27,9 +27,8 @@ export default function Home() {
       </Link>
 
       <footer className="absolute bottom-8 text-slate-500 text-sm">
-        <p>
-          {new Date().getFullYear()} LearningHub. Non-commercial educational project by Artem Orlov.
-        </p>
+        <p>Non-commercial educational project by Artem Orlov.</p>
+        <p>{new Date().getFullYear()} LearningHub.</p>
       </footer>
     </div>
   );

@@ -50,8 +50,6 @@ export function useUserLimits(): UseUserLimitsReturn {
         .single();
 
       if (supabaseError) {
-        console.log('supabaseError', supabaseError);
-
         if (supabaseError.code === 'PGRST116') {
           throw new Error('Could not find user limits. Please contact support.');
         } else {
