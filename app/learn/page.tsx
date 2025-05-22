@@ -285,7 +285,7 @@ export default function LearnPage() {
           )}
 
           <div className="mt-10">
-            <FlashList flashcards={flashcards} />
+            <FlashList flashcards={flashcards} isShowingInteractionButtons={false} />
           </div>
         </>
       )}

@@ -23,7 +23,8 @@ export default async function FlashcardsSection({ userId }: FlashcardsSectionPro
     .from('flashcards')
     .select('id, question, answer, created_at, pack_id')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false });
 
   const flashcards: Flashcard[] | null = data;
 

@@ -32,12 +32,14 @@ export default async function MyFlashcardsPage() {
   return (
     <div className="max-w-3xl mx-auto my-8 px-4">
       <header className="mb-8 pb-4 border-b border-gray-200 flex justify-between items-center">
-        <Link href="/learn" className="text-sky-400 text-[1.2rem] hover:text-sky-600 font-medium">
+        <Link
+          href="/learn"
+          className="text-sky-400 sm:w-auto w-[5.3rem] sm:mt-2 text-[1.2rem] hover:text-sky-600 font-medium">
           Create flashcards
         </Link>
-        <h1 className="text-4xl font-bold text-white m-0">My Flashcards</h1>
+        <h1 className="text-xl sm:text-4xl font-bold text-white m-0">My Flashcards</h1>
         {userLimits && !limitsError ? (
-          <div className="text-right text-white">
+          <div className="text-right text-white sm:w-auto w-[5rem]">
             <p className="m-0 mb-1 text-sm ">Usage:</p>
             <p className="m-0 text-lg font-medium ">
               {userLimits.fc_current} / {userLimits.fc_limit} flashcards
