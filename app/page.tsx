@@ -4,18 +4,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
       <header className="mb-12">
-        <h1 className="text-5xl md:text-7xl font-bold text-white sm:mb-6 mb-[5rem]">
+        <h1 className="text-5xl md:text-7xl font-bold text-white sm:mb-6 mb-[1.5rem]">
           Welcome to LearningHub
         </h1>
-        <p className="text-lg md:text-xl mt-4 text-slate-300 max-w-2xl mx-auto">
-          Elevate your knowledge and master new skills with LearningHub. We provide intuitive tools
-          and curated content to accelerate your learning journey, making education engaging and
-          effective.
-        </p>
       </header>
 
       <main className="mb-12">
-        <p className="text-md md:text-lg text-slate-400 max-w-xl mx-auto mb-10">
+        <p className="text-md md:text-lg text-slate-200 max-w-xl mx-auto mb-10">
           Whether you&apos;re diving into complex topics or reinforcing your understanding with
           interactive flashcards, LearningHub is your dedicated partner in achieving academic and
           professional excellence.
@@ -24,11 +19,11 @@ export default function Home() {
 
       <Link
         href="/login"
-        className="bg-white text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+        className="bg-white  text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
         Start Your Learning Adventure
       </Link>
 
-      <footer className="text-slate-500 text-sm mt-[4rem]">
+      <footer className="text-slate-500 text-sm absolute bottom-0 mb-4">
         <p>Non-commercial educational project by Artem Orlov.</p>
         <p>{new Date().getFullYear()} LearningHub.</p>
       </footer>

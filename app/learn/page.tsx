@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, DragEvent, useEffect } from 'react';
+import { useState, DragEvent, useEffect, useRef } from 'react';
 import FlashList from '@/app/_components/FlashList';
 import LogoutButton from '../_components/LogoutButton';
 import { useUser } from '../utils/useUser';
@@ -25,13 +25,14 @@ export default function LearnPage() {
   } = useUserLimits();
 
   const [prompt, setPrompt] = useState('');
-  const [isDetailed, setIsDetailed] = useState(false);
   const [flashcards, setFlashcards] = useState<FlashcardData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pdfJsApi, setPdfJsApi] = useState<typeof import('pdfjs-dist') | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounter = useRef<number>(0);
 
   useEffect(() => {
     const initPdfJs = async () => {
@@ -46,6 +47,38 @@ export default function LearnPage() {
     };
     initPdfJs();
   }, []);
+
+  const processPdfFile = async (file: File) => {
+    if (!pdfJsApi) {
+      setError('PDF library is still loading. Please try again in a moment.');
+      return;
+    }
+    setIsLoading(true);
+    setPrompt('Processing PDF...');
+    setError(null);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await pdfJsApi.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText +=
+          textContent.items
+            .filter((item): item is TextItem => 'str' in item)
+            .map((item: TextItem) => item.str)
+            .join(' ') + '\n';
+      }
+      setPrompt(fullText.trim());
+    } catch (pdfError) {
+      console.error('Error processing PDF:', pdfError);
+      setError("Failed to process PDF. Ensure it's a valid PDF file.");
+      setPrompt('');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGenerateFlashcards = async () => {
     if (!prompt.trim()) {
@@ -67,7 +100,7 @@ export default function LearnPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt, detailed: isDetailed, userId: user.id }),
+        body: JSON.stringify({ prompt, userId: user.id }),
       });
 
       if (!response.ok) {
@@ -106,70 +139,65 @@ export default function LearnPage() {
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDraggingOver(true);
+    dragCounter.current += 1;
+    if (dragCounter.current === 1) {
+      setIsDraggingOver(true);
+    }
   };
 
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) {
-      return;
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) {
+      setIsDraggingOver(false);
     }
-    setIsDraggingOver(false);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDraggingOver) {
-      setIsDraggingOver(true);
-    }
   };
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    dragCounter.current = 0;
     setIsDraggingOver(false);
     setError(null);
-
-    if (!pdfJsApi) {
-      setError('PDF library is still loading. Please try again in a moment.');
-      return;
-    }
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
       if (file.type === 'application/pdf') {
-        setIsLoading(true);
-        setPrompt('Processing PDF...');
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const pdfDoc = await pdfJsApi.getDocument({ data: arrayBuffer }).promise;
-          let fullText = '';
-          for (let i = 1; i <= pdfDoc.numPages; i++) {
-            const page = await pdfDoc.getPage(i);
-            const textContent = await page.getTextContent();
-            fullText +=
-              textContent.items
-                .filter((item): item is TextItem => 'str' in item)
-                .map((item: TextItem) => item.str)
-                .join(' ') + '\n';
-          }
-          setPrompt(fullText.trim());
-        } catch (pdfError) {
-          console.error('Error processing PDF:', pdfError);
-          setError("Failed to process PDF. Ensure it's a valid PDF file.");
-          setPrompt('');
-        } finally {
-          setIsLoading(false);
-        }
+        await processPdfFile(file);
       } else {
         setError('Invalid file type. Please drop a PDF file.');
       }
     } else {
       setError('No file dropped.');
     }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type === 'application/pdf') {
+        await processPdfFile(file);
+      } else {
+        setError('Invalid file type. Please select a PDF file.');
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      setError('No file selected.');
+    }
+  };
+
+  const handleChooseFileClick = () => {
+    fileInputRef.current?.click();
   };
 
   if (isLoggingOut) {
@@ -232,11 +260,13 @@ export default function LearnPage() {
       ) : (
         <>
           <h1 className="text-center mb-8 text-4xl font-bold text-white">Generate Flashcards</h1>
+          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
+            AI can make mistakes, so please verify important information.
+          </h1>
+
           <div
-            className={`relative mb-6 rounded-lg transition-all duration-200 ease-in-out ${
-              isDraggingOver
-                ? 'border-2 border-dashed border-sky-500 bg-sky-900/30'
-                : 'border border-gray-700'
+            className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out ${
+              isDraggingOver ? 'border-2 border-dashed border-sky-500 bg-sky-900/30' : ''
             }`}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
@@ -247,8 +277,10 @@ export default function LearnPage() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Enter text or drop a PDF file here to create flashcards..."
               rows={6}
-              className={`w-full p-3 text-base bg-gray-800 text-slate-100 border border-gray-600 rounded-lg box-border resize-vertical shadow-inner focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-all duration-200 ease-in-out placeholder-slate-500 ${
-                isDraggingOver ? 'opacity-50' : 'opacity-100'
+              className={`w-full p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner transition-all duration-200 ease-in-out placeholder-slate-500 ${
+                isDraggingOver
+                  ? 'opacity-50 border-transparent focus:ring-0 focus:border-transparent pointer-events-none'
+                  : 'opacity-100 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
               }`}
               disabled={isLoading}
             />
@@ -259,18 +291,28 @@ export default function LearnPage() {
               </div>
             )}
           </div>
-          <div className="mb-6 flex items-center">
-            <input
-              type="checkbox"
-              id="detailed"
-              checked={isDetailed}
-              onChange={(e) => setIsDetailed(e.target.checked)}
-              className="mr-2 h-4 w-4 cursor-pointer text-sky-500 focus:ring-sky-500 border-gray-600 bg-gray-700 rounded accent-sky-500"
-            />
-            <label htmlFor="detailed" className="text-base text-slate-300 cursor-pointer">
-              Provide detailed answers
-            </label>
-          </div>
+          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
+            Gemini API collects input data to improve its performance.
+          </h1>
+          <h1 className="text-center mb-1 text-[0.8rem] text-slate-400">
+            LearningHub stores your personal information and flashcards.
+          </h1>
+
+          <button
+            onClick={handleChooseFileClick}
+            disabled={isLoading}
+            className="mt-4 mb-6 w-full text-center py-2 px-4 border border-gray-600 text-slate-300 rounded-md hover:bg-gray-800 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+            Choose PDF File
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            accept=".pdf"
+            style={{ display: 'none' }}
+            disabled={isLoading}
+          />
+
           <button
             onClick={handleGenerateFlashcards}
             disabled={isLoading}
