@@ -203,7 +203,7 @@ export default function LearnPage() {
   if (isLoggingOut) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
-        <h2 className="text-xl font-semibold text-center text-slate-100">Виконується вихід...</h2>
+        <h2 className="text-xl font-semibold text-center text-slate-100">Logging out...</h2>
       </div>
     );
   }
@@ -249,7 +249,7 @@ export default function LearnPage() {
 
       {isLoggingOut ? (
         <div className="mt-8 p-5 text-center text-slate-300 rounded-lg shadow-md bg-gray-900">
-          <h2 className="text-xl font-semibold">Виконується вихід...</h2>
+          <h2 className="text-xl font-semibold">Logging out...</h2>
         </div>
       ) : limitsError ? (
         <div className="mt-8 p-5 text-center bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md">
@@ -264,10 +264,12 @@ export default function LearnPage() {
             AI can make mistakes, so please verify important information.
           </h1>
 
+          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
+            Gemini API collects input data to improve its performance.
+          </h1>
+
           <div
-            className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out ${
-              isDraggingOver ? 'border-2 border-dashed border-sky-500 bg-sky-900/30' : ''
-            }`}
+            className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out `}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -279,7 +281,7 @@ export default function LearnPage() {
               rows={6}
               className={`w-full p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner transition-all duration-200 ease-in-out placeholder-slate-500 ${
                 isDraggingOver
-                  ? 'opacity-50 border-transparent focus:ring-0 focus:border-transparent pointer-events-none'
+                  ? 'opacity-30 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
                   : 'opacity-100 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
               }`}
               disabled={isLoading}
@@ -291,12 +293,6 @@ export default function LearnPage() {
               </div>
             )}
           </div>
-          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
-            Gemini API collects input data to improve its performance.
-          </h1>
-          <h1 className="text-center mb-1 text-[0.8rem] text-slate-400">
-            LearningHub stores your personal information and flashcards.
-          </h1>
 
           <button
             onClick={handleChooseFileClick}

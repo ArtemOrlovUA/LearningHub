@@ -1,9 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import Header from './_components/Header';
+import { useUser } from '@/app/utils/useUser';
 
 export default function Home() {
+  const { user, loading: authLoading } = useUser();
+  const isLoggedIn = !!user;
+
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
-      <header className="mb-12">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-start pt-24 md:pt-28 p-6 text-center">
+      <Header isLoggedIn={isLoggedIn} user={user} authLoading={authLoading} />
+
+      <header className="mb-12 mt-8">
         <h1 className="text-5xl md:text-7xl font-bold text-white sm:mb-6 mb-[1.5rem]">
           Welcome to LearningHub
         </h1>
@@ -18,8 +27,8 @@ export default function Home() {
       </main>
 
       <Link
-        href="/login"
-        className="bg-white  text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+        href={isLoggedIn ? '/learn' : '/login'}
+        className="bg-white text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
         Start Your Learning Adventure
       </Link>
 
