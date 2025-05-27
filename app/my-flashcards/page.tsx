@@ -53,7 +53,7 @@ export default async function MyFlashcardsPage() {
       <section>
         <Suspense
           fallback={
-            <p className="text-center mt-8 text-lg text-gray-600">Loading your flashcards...</p>
+            <p className="text-center mt-8 text-lg text-slate-300">Loading flashcards...</p>
           }>
           <FlashcardsSection userId={user.id} />
         </Suspense>
