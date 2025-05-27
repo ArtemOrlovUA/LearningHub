@@ -1,31 +1,47 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import supabase from '../utils/client';
-import { User } from '@supabase/supabase-js';
 import { useState } from 'react';
+import { useUser } from '../utils/useUser';
 
-interface HeaderProps {
-  isLoggedIn: boolean;
-  user: User | null;
-  authLoading: boolean;
-}
+export default function Header() {
+  const { user, loading: authLoading } = useUser();
+  const isLoggedIn = !!user;
+  const router = useRouter();
 
-export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navLinks = [
-    { href: '#', label: 'Pricing' },
-    { href: '#', label: 'Features' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/features', label: 'Features' },
+  ];
+
+  const userNavLinks = [
+    { href: '/learn', label: 'Learn' },
+    { href: '/my-flashcards', label: 'My Flashcards' },
   ];
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error logging out:', error.message);
-    }
+    setIsLoggingOut(true);
     setIsMobileMenuOpen(false);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error logging out:', error.message);
+      } else {
+        router.push('/');
+        router.refresh();
+      }
+    } catch (e) {
+      console.error('Exception during logout:', e);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -38,7 +54,7 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
 
   return (
     <>
-      <nav className="bg-black text-white py-4 px-6 md:px-10 fixed top-0 left-0 right-0 z-50 shadow-md">
+      <nav className="bg-black relative text-white py-4 px-6 md:px-10 fixed top-0 left-0 right-0 z-50 shadow-md">
         <div className="container mx-auto flex items-center justify-between">
           <Link
             href="/"
@@ -48,6 +64,15 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
           </Link>
 
           <div className="hidden md:flex space-x-6 items-center">
+            {isLoggedIn &&
+              userNavLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="hover:text-gray-300 transition-colors duration-200">
+                  {link.label}
+                </Link>
+              ))}
             {navLinks.slice(0, 2).map((link) => (
               <Link
                 key={link.label}
@@ -80,8 +105,9 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
                 {fullName && <span className="text-sm hidden md:inline">{fullName}</span>}
                 <button
                   onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-all duration-300 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
-                  Logout
+                  disabled={isLoggingOut}
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-all duration-300 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </button>
               </>
             ) : (
@@ -94,7 +120,7 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
           </div>
 
           <div className="md:hidden">
-            <button onClick={toggleMobileMenu} aria-label="Toggle menu">
+            <button onClick={toggleMobileMenu} aria-label="Toggle menu" disabled={isLoggingOut}>
               {isMobileMenuOpen ? (
                 <XMarkIcon className="h-8 w-8 text-white" />
               ) : (
@@ -109,6 +135,16 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
         <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-95 text-white flex flex-col pt-[calc(4rem+1px)]">
           <div className="container mx-auto px-6 py-4 flex flex-col h-full">
             <div className="flex flex-col space-y-5 mb-8">
+              {isLoggedIn &&
+                userNavLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="text-xl hover:text-gray-300 transition-colors duration-200"
+                    onClick={toggleMobileMenu}>
+                    {link.label}
+                  </Link>
+                ))}
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
@@ -148,8 +184,9 @@ export default function Header({ isLoggedIn, user, authLoading }: HeaderProps) {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center justify-between w-full text-left py-3 px-3 text-lg rounded-md hover:bg-gray-800 transition-colors duration-200">
-                    <span>Log Out</span>
+                    disabled={isLoggingOut}
+                    className="flex items-center justify-between w-full text-left py-3 px-3 text-lg rounded-md hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span>{isLoggingOut ? 'Logging out...' : 'Log Out'}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"

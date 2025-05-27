@@ -5,7 +5,6 @@ import supabase from '@/app/utils/client';
 /**
  * Custom hook to manage user authentication state.
  * It fetches the current user and listens for authentication state changes.
- * @returns {{ user: User | null, loading: boolean }} An object containing the user and loading state.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -44,5 +43,5 @@ export function useUser() {
     };
   }, []);
 
-  return { user, loading };
+  return { user, loading, setUser };
 }

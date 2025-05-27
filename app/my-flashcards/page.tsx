@@ -30,7 +30,7 @@ export default async function MyFlashcardsPage() {
     .single<UserLimit>();
 
   return (
-    <div className="max-w-3xl mx-auto my-8 px-4">
+    <div className="max-w-3xl mx-auto my-2 px-4">
       <header className="mb-8 pb-4 border-b border-gray-200 flex justify-between items-center">
         <Link
           href="/learn"

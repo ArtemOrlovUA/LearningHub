@@ -2,11 +2,9 @@
 
 import { useState, DragEvent, useEffect, useRef } from 'react';
 import FlashList from '@/app/_components/FlashList';
-import LogoutButton from '../_components/LogoutButton';
 import { useUser } from '../utils/useUser';
 import { useUserLimits } from '../utils/useLimits';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
-import Link from 'next/link';
 
 interface FlashcardData {
   id: number;
@@ -15,7 +13,7 @@ interface FlashcardData {
 }
 
 export default function LearnPage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: authLoading } = useUser();
   const {
     fc_limit,
     fc_current,
@@ -30,7 +28,6 @@ export default function LearnPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pdfJsApi, setPdfJsApi] = useState<typeof import('pdfjs-dist') | null>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef<number>(0);
 
@@ -196,137 +193,142 @@ export default function LearnPage() {
     }
   };
 
+  const handleResetPrompt = () => {
+    setPrompt('');
+    setError(null);
+  };
+
   const handleChooseFileClick = () => {
     fileInputRef.current?.click();
   };
 
-  if (isLoggingOut) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
-        <h2 className="text-xl font-semibold text-center text-slate-100">Logging out...</h2>
+        <h2 className="text-xl font-semibold text-center text-slate-100">Loading user data...</h2>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black pt-20">
+        <h2 className="text-xl font-semibold text-center text-slate-100">
+          You have been logged out. Redirecting...
+        </h2>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 max-w-2xl mx-auto my-8 px-4">
-      {!userLoading ? (
-        <div className="mb-8 p-4 border border-gray-700 bg-gray-900 rounded-lg shadow-md">
-          <h1 className="text-2xl font-semibold text-white mb-2">
-            Welcome, {user?.user_metadata?.full_name}
-          </h1>
-          <p className="text-slate-300 mb-3">Email: {user?.email}</p>
-          <div className="flex space-x-4">
-            <Link
-              href="/my-flashcards"
-              className="text-sky-400 border border-sky-400 hover:bg-sky-400 hover:text-black font-medium py-2 px-3 rounded-md transition-colors">
-              View my flashcards
-            </Link>
-            <LogoutButton setIsLoggingOut={setIsLoggingOut} />
-          </div>
-        </div>
-      ) : (
-        <div className="mb-8 p-4 text-center">
-          <p className="text-slate-400">Loading user data...</p>
-        </div>
-      )}
-      {!limitsLoading ? (
-        <div className="mb-8 p-4 border border-gray-700 bg-gray-900 rounded-lg shadow-md">
-          <h1 className="text-xl font-semibold text-white mb-2">Limits</h1>
-          {limitsError && <p className="text-red-500">Error: {limitsError.message}</p>}
-          {fc_limit !== undefined && fc_current !== undefined && !limitsError && (
-            <p className="text-slate-300">
-              Used: {fc_current} / Limit: {fc_limit}
-            </p>
-          )}
-        </div>
-      ) : (
+    <div className="min-h-screen bg-black text-slate-100 max-w-2xl mx-auto pt-6 pb-12 px-4">
+      {limitsLoading ? (
         <div className="mb-8 p-4 text-center">
           <h1 className="text-xl font-semibold text-white mb-2">Limits</h1>
           <p className="text-slate-400">Loading limits...</p>
         </div>
-      )}
-
-      {isLoggingOut ? (
-        <div className="mt-8 p-5 text-center text-slate-300 rounded-lg shadow-md bg-gray-900">
-          <h2 className="text-xl font-semibold">Logging out...</h2>
-        </div>
       ) : limitsError ? (
-        <div className="mt-8 p-5 text-center bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-2">Error Loading Flashcard Generation Feature</h2>
-          <p>{limitsError.message}</p>
+        <div className="mb-8 p-4 border border-red-700 bg-red-900 text-red-300 rounded-lg shadow-md">
+          <h1 className="text-xl font-semibold text-white mb-2">Limits Error</h1>
+          <p>Could not load usage limits: {limitsError.message}</p>
           <p>Please try refreshing the page. If the problem persists, contact support.</p>
         </div>
       ) : (
-        <>
-          <h1 className="text-center mb-8 text-4xl font-bold text-white">Generate Flashcards</h1>
-          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
-            AI can make mistakes, so please verify important information.
-          </h1>
+        <div className="mb-8 p-4 border border-gray-700 bg-gray-900 rounded-lg shadow-md">
+          <h1 className="text-xl font-semibold text-white mb-2">Limits</h1>
+          {fc_limit !== undefined && fc_current !== undefined && (
+            <p className="text-slate-300">
+              Used: {fc_current} / {fc_limit}
+            </p>
+          )}
+        </div>
+      )}
 
-          <h1 className="text-center mb-2 text-[0.8rem] text-slate-400">
-            Gemini API collects input data to improve its performance.
-          </h1>
+      <>
+        <h1 className="text-center mb-8 text-4xl font-bold text-white">Generate Flashcards</h1>
+        <h2 className="text-center mb-2 text-[0.8rem] text-slate-400">
+          AI can make mistakes, so please verify important information.
+        </h2>
 
-          <div
-            className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out `}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter text or drop a PDF file here to create flashcards..."
-              rows={6}
-              className={`w-full p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner transition-all duration-200 ease-in-out placeholder-slate-500 ${
-                isDraggingOver
-                  ? 'opacity-30 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
-                  : 'opacity-100 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
-              }`}
-              disabled={isLoading}
-            />
-            {isDraggingOver && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-100 pointer-events-none rounded-lg">
-                <p className="m-0 text-lg font-bold">Drag and drop files here</p>
-                <p className="mt-2 text-sm">only PDF-files are supported</p>
-              </div>
-            )}
-          </div>
+        <h2 className="text-center mb-2 text-[0.8rem] text-slate-400">
+          Gemini API collects input data to improve its performance.
+        </h2>
 
+        <div
+          className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out `}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Enter text or drop a PDF file here to create flashcards..."
+            rows={6}
+            className={`w-full p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner transition-all duration-200 ease-in-out placeholder-slate-500 ${
+              isDraggingOver
+                ? 'opacity-30 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
+                : 'opacity-100 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
+            }`}
+            disabled={isLoading}
+          />
+          {isDraggingOver && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-100 pointer-events-none rounded-lg">
+              <p className="m-0 text-lg font-bold">Drag and drop files here</p>
+              <p className="mt-2 text-sm">only PDF-files are supported</p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-6">
           <button
             onClick={handleChooseFileClick}
             disabled={isLoading}
-            className="mt-4 mb-6 w-full text-center py-2 px-4 border border-gray-600 text-slate-300 rounded-md hover:bg-gray-800 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full text-center py-2 px-4 border border-gray-600 text-slate-300 rounded-md hover:bg-gray-800 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
             Choose PDF File
           </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            accept=".pdf"
-            style={{ display: 'none' }}
-            disabled={isLoading}
-          />
-
           <button
-            onClick={handleGenerateFlashcards}
+            onClick={handleResetPrompt}
             disabled={isLoading}
-            className="block w-full py-3 px-5 text-lg font-semibold bg-white text-black rounded-lg transition-colors duration-200 ease-in-out hover:bg-gray-200 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed">
-            {isLoading ? 'Generating...' : 'Generate Flashcards'}
+            className="w-full text-center py-2 px-4 border border-red-500 text-red-300 rounded-md hover:bg-red-700 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+            Reset Text
           </button>
+        </div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          accept=".pdf"
+          style={{ display: 'none' }}
+          disabled={isLoading}
+        />
 
-          {error && (
-            <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-              Error: {error}
-            </div>
-          )}
+        <button
+          onClick={handleGenerateFlashcards}
+          disabled={
+            isLoading ||
+            !!error ||
+            !!limitsError ||
+            (fc_current !== undefined &&
+              fc_limit !== undefined &&
+              fc_current >= fc_limit &&
+              !isLoading) ||
+            limitsLoading
+          }
+          className="block w-full py-3 px-5 text-lg font-semibold bg-white text-black rounded-lg transition-colors duration-200 ease-in-out hover:bg-gray-200 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed">
+          {isLoading ? 'Generating...' : 'Generate Flashcards'}
+        </button>
 
-          <div className="mt-10">
-            <FlashList flashcards={flashcards} isShowingInteractionButtons={false} />
+        {error && (
+          <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            Error: {error}
           </div>
-        </>
-      )}
+        )}
+
+        <div className="mt-10">
+          <FlashList flashcards={flashcards} isShowingInteractionButtons={false} />
+        </div>
+      </>
     </div>
   );
 }

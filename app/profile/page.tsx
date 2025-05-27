@@ -4,7 +4,6 @@ import { useUser } from '@/app/utils/useUser';
 import { useUserLimits } from '@/app/utils/useLimits';
 import { UserIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
-import Header from '../_components/Header';
 import ProfileCell from '../_components/ProfileCell';
 import PlanCard from '../_components/PlanCard';
 
@@ -60,17 +59,12 @@ export default function ProfilePage() {
           className="bg-white text-black font-semibold py-2 px-6 rounded-lg text-lg hover:bg-gray-200 mr-4">
           Log In
         </Link>
-        <Link href="/" className="text-blue-400 hover:text-blue-300">
-          Go to Homepage
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-28 md:pt-32 p-6">
-      <Header isLoggedIn={true} user={user} authLoading={userLoading} />
-
+    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
       <header className="mb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white">Your Account</h1>
       </header>

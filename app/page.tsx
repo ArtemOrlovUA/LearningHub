@@ -1,17 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import Header from './_components/Header';
 import { useUser } from '@/app/utils/useUser';
 
 export default function Home() {
-  const { user, loading: authLoading } = useUser();
+  const { user } = useUser();
   const isLoggedIn = !!user;
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-start pt-24 md:pt-28 p-6 text-center">
-      <Header isLoggedIn={isLoggedIn} user={user} authLoading={authLoading} />
-
       <header className="mb-12 mt-8">
         <h1 className="text-5xl md:text-7xl font-bold text-white sm:mb-6 mb-[1.5rem]">
           Welcome to LearningHub
