@@ -12,6 +12,8 @@ export default function ProfilePage() {
   const {
     fc_limit,
     fc_current,
+    q_limit,
+    q_current,
     loading: limitsLoading,
     error: limitsError,
     refetchLimits,
@@ -94,12 +96,20 @@ export default function ProfilePage() {
             isLoading={limitsLoading}
             errorText={limitsError?.message}>
             {fc_limit !== null && fc_current !== null ? (
-              <p>
-                Flashcards Generated:{' '}
-                <span className="font-semibold">
-                  {fc_current} / {fc_limit}
-                </span>
-              </p>
+              <>
+                <p>
+                  Flashcards Generated:{' '}
+                  <span className="font-semibold">
+                    {fc_current} / {fc_limit}
+                  </span>
+                </p>
+                <p>
+                  Quizzes Generated:{' '}
+                  <span className="font-semibold">
+                    {q_current} / {q_limit}
+                  </span>
+                </p>
+              </>
             ) : (
               <p>Limits information not available.</p>
             )}

@@ -53,7 +53,7 @@ export default function PricingPage() {
         </div>
       </main>
 
-      <footer className="text-slate-500 text-sm mt-12 mb-6 text-center">
+      <footer className="text-slate-500 text-[1.2rem] mt-12 mb-6 text-center">
         <p>All prices are in USD. You can cancel your subscription at any time.</p>
         <p className="mt-2">
           Need a custom plan?{' '}

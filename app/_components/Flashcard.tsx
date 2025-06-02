@@ -172,12 +172,12 @@ export default function Flashcard({
             <div className="flex gap-x-[1rem] items-center">
               <button
                 onClick={toggleAnswer}
-                className="py-2 px-4 text-sm text-sky-400 bg-transparent border border-sky-400 rounded-md cursor-pointer transition-colors duration-200 ease-in-out hover:bg-sky-400 hover:text-black">
+                className="py-2 px-4 text-sm text-emerald-400 bg-transparent border border-emerald-400 rounded-md cursor-pointer transition-colors duration-200 ease-in-out hover:bg-emerald-400 hover:text-black">
                 {isAnswerVisible ? 'Hide Answer' : 'Show Answer'}
               </button>
               <button
                 onClick={handleEdit}
-                className="py-2 px-4 text-sm cursor-pointer text-emerald-400 border-emerald-400 hover:bg-emerald-400 hover:text-black border rounded-md transition-colors duration-150 ease-in-out">
+                className="py-2 px-4 text-sm cursor-pointer text-sky-400 border-sky-400 hover:bg-sky-400 hover:text-black border rounded-md transition-colors duration-150 ease-in-out">
                 Edit
               </button>
               <form

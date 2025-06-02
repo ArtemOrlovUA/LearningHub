@@ -18,7 +18,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-black text-slate-100">
+    <div className="flex flex-col pb-[10rem] items-center justify-center h-screen bg-black text-slate-100">
       <>
         <h1 className="text-3xl font-bold mb-8 text-white">To continue, please sign in</h1>
 
