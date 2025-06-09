@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+      <div className="min-h-full bg-black flex items-center justify-center text-white">
         <p>Loading user information...</p>
       </div>
     );
@@ -52,7 +52,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6">
+      <div className="min-h-full bg-black flex flex-col items-center justify-center text-white p-6">
         <p className="text-xl mb-4">
           Could not load user profile. Please ensure you are logged in.
         </p>
@@ -66,7 +66,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
+    <div className="min-h-full bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
       <header className="mb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white">Your Account</h1>
       </header>

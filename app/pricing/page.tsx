@@ -24,10 +24,10 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
-      <header className="mb-10 text-center">
+    <div className="min-h-full bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
+      <header className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white">Choose Your Plan</h1>
-        <p className="text-lg text-slate-400 mt-2">Simple, transparent pricing. No hidden fees.</p>
+        <p className="text-lg text-slate-400 mt-4">Simple, transparent pricing. No hidden fees.</p>
       </header>
 
       <main className="w-full max-w-4xl">

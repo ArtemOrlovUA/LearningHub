@@ -23,7 +23,7 @@ export default function LearnPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-full bg-black">
         <h2 className="text-xl font-semibold text-center text-slate-100 mb-[10rem]">
           Loading user data...
         </h2>
@@ -33,7 +33,7 @@ export default function LearnPage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black pt-20">
+      <div className="flex items-center justify-center min-h-full bg-black pt-20">
         <h2 className="text-xl font-semibold text-center text-slate-100 mb-[10rem]">
           You have been logged out. Redirecting...
         </h2>
@@ -46,7 +46,7 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 max-w-2xl mx-auto pb-6 px-4">
+    <div className="min-h-full bg-black text-slate-100 max-w-2xl mx-auto pb-6 px-4">
       {limitsError && (
         <div className="mb-8 p-4 border border-red-700 bg-red-900 text-red-300 rounded-lg shadow-md">
           <h1 className="text-xl font-semibold text-white mb-2">Limits Error</h1>
@@ -56,25 +56,28 @@ export default function LearnPage() {
       )}
 
       {/* Tab navigation */}
-      <div className="flex w-full mb-8 border-b border-gray-700">
+      <div className="relative flex w-full mb-8 border-b border-gray-700">
         <button
-          className={`flex-1 py-3 font-medium text-center transition-colors ${
-            activeTab === 'flashcards'
-              ? 'text-white border-b-2 border-white'
-              : 'text-gray-400 hover:text-gray-200'
+          className={`flex-1 pb-3 font-medium text-center transition-colors ${
+            activeTab === 'flashcards' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
           }`}
           onClick={() => handleTabChange('flashcards')}>
           Flashcards
         </button>
+
         <button
-          className={`flex-1 py-3 font-medium text-center transition-colors ${
-            activeTab === 'quiz'
-              ? 'text-white border-b-2 border-white'
-              : 'text-gray-400 hover:text-gray-200'
+          className={`flex-1 pb-3 font-medium text-center transition-colors ${
+            activeTab === 'quiz' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
           }`}
           onClick={() => handleTabChange('quiz')}>
           Quiz
         </button>
+
+        <div
+          className={`absolute bottom-0 h-0.5 w-1/2 bg-white transition-transform duration-300 ease-in-out ${
+            activeTab === 'flashcards' ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        />
       </div>
 
       {/* Content based on active tab */}

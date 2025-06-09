@@ -22,9 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sora.variable} antialiased bg-black`}>
+      <body className={`${sora.variable} antialiased bg-black flex flex-col h-screen`}>
         <Header />
-        {children}
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </body>
     </html>
   );

@@ -30,10 +30,10 @@ const featuresData = [
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
-      <header className="mb-10 md:mb-16 text-center">
+    <div className="min-h-full bg-black text-white flex flex-col items-center pt-5 md:pt-10 p-6">
+      <header className="mb-10 md:mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white">Powerful Features</h1>
-        <p className="text-lg text-slate-400 mt-2">
+        <p className="text-lg text-slate-400 mt-4">
           Discover what makes LearningHub the best platform for your studies.
         </p>
       </header>

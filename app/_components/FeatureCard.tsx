@@ -4,9 +4,15 @@ interface FeatureCardProps {
   title: string;
   description: string;
   imageUrl: string;
+  imageHeightClassName?: string;
 }
 
-export function FeatureCard({ title, description, imageUrl }: FeatureCardProps) {
+export function FeatureCard({
+  title,
+  description,
+  imageUrl,
+  imageHeightClassName = 'h-[18rem]',
+}: FeatureCardProps) {
   return (
     <div className="relative p-[2px] rounded-xl group">
       <div
@@ -20,8 +26,15 @@ export function FeatureCard({ title, description, imageUrl }: FeatureCardProps) 
       <div className="relative bg-neutral-900 rounded-xl p-6 md:p-8 flex flex-col h-full">
         <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">{title}</h3>
         <p className="text-neutral-400 text-base md:text-lg mb-6 flex-grow">{description}</p>
-        <div className="mt-auto aspect-[16/9] w-full relative">
-          <Image src={imageUrl} alt={title} fill className="object-contain" />
+
+        <div
+          className={`mt-auto w-full relative overflow-hidden rounded-md ${imageHeightClassName}`}>
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-140"
+          />
         </div>
       </div>
     </div>

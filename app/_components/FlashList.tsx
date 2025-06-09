@@ -18,7 +18,7 @@ export default function FlashList({
   if (!flashcards || flashcards.length === 0) {
     return (
       <>
-        <div className="text-center text-slate-400 mt-8">No flashcards to display.</div>
+        <div className="text-center text-slate-400">No flashcards to display.</div>
         <div className="text-center text-slate-400 mt-1">
           Generate some flashcards to get started!
         </div>
