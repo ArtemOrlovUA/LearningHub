@@ -144,10 +144,6 @@ export default function ProfilePage() {
           </div>
         </ProfileCell>
       </main>
-
-      <footer className="text-slate-500 text-sm mt-12 mb-6">
-        <p>Manage your account settings and preferences.</p>
-      </footer>
     </div>
   );
 }

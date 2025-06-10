@@ -10,7 +10,7 @@ export default function Home() {
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start p-6 text-center">
-      <header className="mb-12 mt-8">
+      <header className="mb-12 mt-24">
         <h1 className="text-5xl md:text-7xl font-bold text-white sm:mb-6 mb-[1.5rem]">
           Welcome to LearningHub
         </h1>
