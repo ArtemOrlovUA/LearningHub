@@ -254,7 +254,7 @@ export function FlashcardGenerator({
         </button>
         <button
           onClick={handleResetPrompt}
-          disabled={isLoading}
+          disabled={isLoading || !prompt}
           className="w-full text-center py-2 px-4 border border-red-500 text-red-300 rounded-md hover:bg-red-700 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
           Reset Text
         </button>

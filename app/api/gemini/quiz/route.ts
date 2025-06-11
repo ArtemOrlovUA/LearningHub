@@ -19,47 +19,46 @@ const modelName = process.env.MODEL_NAME || 'gemini-2.0-flash';
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: modelName }) : null;
 
-const QUIZ_INSTRUCTIONS = `You are ProfessorQuizMaster, an AI assistant designed to simulate an experienced professor preparing quiz questions for students. Your task is to create insightful, challenging quiz questions with clear answers based on the provided text. ALWAYS CREATE QUIZZES IN ENGLISH.
+const QUIZ_INSTRUCTIONS = `You are an Expert Exam Designer, an AI assistant specializing in creating high-stakes questions for professional certification exams and technical interviews. Your task is to generate challenging multiple-choice questions based on the provided text. ALWAYS CREATE QUIZZES IN ENGLISH.
 
 Your goals are:
 
-1. **Analyze and Extract Key Information:** From the provided text, identify the most important concepts, facts, definitions, and relationships that would be appropriate for quiz questions.
+1.  **Analyze and Extract Core Concepts:** From the provided text, identify the most critical concepts, principles, and practical applications that are essential for a professional to know. Focus on information that would be heavily weighted on an exam or asked in an interview.
 
-2. **Create Diverse Question Types:** Generate a variety of question formats, such as:
-   * Multiple-choice questions (with one correct answer and 3-4 plausible distractors)
-   * True/False questions
-   * Short answer questions (requiring a brief, direct answer)
+2.  **Create High-Quality Multiple-Choice Questions:**
+    *   Each question must have four options.
+    *   There must be only **one** definitively correct answer.
+    *   The incorrect options (distractors) should be plausible and based on common misconceptions or related concepts from the text to truly test the user's understanding.
 
-3. **Ensure Educational Value:** Each question should:
-   * Test understanding of important concepts rather than trivial details
-   * Be clear and unambiguous
-   * Have a definitive correct answer
-   * Be challenging but fair
-   * Focus on material that would realistically appear on a test
+3.  **Ensure Professional-Level Value:**
+    *   Questions should test a deep understanding of core concepts, not trivial details.
+    *   Questions must be clear, concise, and unambiguous.
+    *   The question text itself should not contain instructions like "Select the correct answer."
 
-4. **Format Requirements:** Each quiz item must be in the format:
-   Question|||||Answer
-   * For multiple-choice questions, format as: "Question|||||Option A|||||Option B|||||Option C|||||Option D" (separate the question from each option with |||||)
-   * For true/false questions, just state the proposition in the question part and "True" or "False" in the answer part
-   * For other question types, provide a clear question and the definitive correct answer
+4.  **Strict Formatting Requirements:** Each quiz item must be a single string containing six parts, separated by '|||||':
+    *   **Part 1:** The question text.
+    *   **Part 2:** The first option (e.g., "A) Option 1").
+    *   **Part 3:** The second option (e.g., "B) Option 2").
+    *   **Part 4:** The third option (e.g., "C) Option 3").
+    *   **Part 5:** The fourth option (e.g., "D) Option 4").
+    *   **Part 6:** The full text of the single correct option (e.g., "B) Option 2").
+    *   **Format:** \`Question text|||||A) Option 1|||||B) Option 2|||||C) Option 3|||||D) Option 4|||||B) Option 2\`
 
-5. **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the content of the text but do not include the word "Quiz" in the name.
+5.  **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the content of the text. Do not include the word "Quiz" in the name. Name of the quiz should be in the same language as the language of user text.
 
-6. **Output Format (Strict):**
-   * Return your answer as a JSON-style array of strings.
-   * The first element should be the quiz name.
-   * Each subsequent element should be one quiz question in the format "Question|||||Answer".
-   * Separate elements with commas, enclosed in square brackets.
-   * Do not include any extra text outside the array.
+6.  **Strict Output Format:**
+    *   You must return your answer as a single JSON-style array of strings.
+    *   The **first** element of the array must be the quiz name.
+    *   Each subsequent element must be a single quiz item string in the specified format.
+    *   Do not include any extra text, explanations, or formatting outside of the JSON array.
 
-7. **Limit Quantity:** Generate a maximum of {{MAX_QUESTIONS}} quiz questions, focusing on the most important content.
+7.  **Limit Quantity:** Generate a maximum of {{MAX_QUESTIONS}} quiz questions, focusing on the most important content.
 
-Example output format:
+**Example of a valid output array:**
 [
-  "Introduction to Classical Physics",
-  "Which scientist formulated the law of universal gravitation in 1687?|||||A) Albert Einstein|||||B) Isaac Newton|||||C) Galileo Galilei|||||D) Johannes Kepler",
-  "The law of universal gravitation states that the gravitational force between two objects is inversely proportional to:|||||A) Their combined mass|||||B) The square root of the distance between them|||||C) The square of the distance between them|||||D) The cube of the distance between them",
-  "True or False: Newton's law of universal gravitation unified terrestrial and celestial mechanics.|||||True"
+  "Advanced Gravity Concepts",
+  "Which scientist's theory of general relativity redefined our understanding of gravity as a curvature of spacetime?|||||A) Isaac Newton|||||B) Albert Einstein|||||C) Galileo Galilei|||||D) Johannes Kepler|||||B) Albert Einstein",
+  "According to the law of universal gravitation, if the distance between two objects is doubled, the gravitational force between them becomes:|||||A) Four times stronger|||||B) Two times stronger|||||C) Half as strong|||||D) One-quarter as strong|||||D) One-quarter as strong"
 ]
 
 Now, here is the user's text. Read it carefully and output only the array with the quiz name and questions, adhering to all instructions above:
@@ -179,18 +178,26 @@ ${prompt}
         if (!qString) continue;
 
         const parts = qString.split('|||||');
-        if (parts.length >= 2) {
-          const question = parts[0].trim();
-          const answer = parts.length > 2 ? parts.slice(1).join('|||||') : parts[1].trim();
+        if (parts.length >= 6) {
+          const questionForDb = parts.slice(0, 5).join('|||||');
+          const answer = parts[5].trim();
 
           finalQuestionsForDB.push({
             user_id: currentUserId,
             quiz_name: quizName,
-            question: question,
+            question: questionForDb,
             answer: answer,
             created_at: new Date().toISOString(),
           });
-          finalQuestionsForClient.push(`${question}|||||${answer}`);
+
+          const questionTextForClient = parts[0].trim();
+          const optionsTextForClient = parts
+            .slice(1, 5)
+            .map((p) => p.trim())
+            .join(' ');
+          finalQuestionsForClient.push(
+            `${questionTextForClient} ${optionsTextForClient}|||||${answer}`,
+          );
         }
       }
 
@@ -198,7 +205,7 @@ ${prompt}
       cleanedTextForClient = JSON.stringify(clientResponse);
 
       if (finalQuestionsForDB.length > 0) {
-        const packId = `quiz-${uuidv4()}`;
+        const packId = `${uuidv4()}`;
         const recordsToInsert: QuizRecord[] = finalQuestionsForDB.map((q) => ({
           ...q,
           pack_id: packId,

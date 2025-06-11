@@ -1,6 +1,11 @@
 import PlanCard from '../_components/PlanCard';
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Pricing',
+  description: 'Choose your plan',
+};
+
 export default function PricingPage() {
   const plans = {
     free: {

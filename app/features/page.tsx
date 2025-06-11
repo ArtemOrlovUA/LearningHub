@@ -1,6 +1,11 @@
 import { FeatureCard } from '../_components/FeatureCard';
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Features',
+  description: 'Discover the features of LearningHub',
+};
+
 const featuresData = [
   {
     id: 'ai-powered-learning',

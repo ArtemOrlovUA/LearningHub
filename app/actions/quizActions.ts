@@ -24,6 +24,18 @@ interface GetUniqueQuizNamesResult {
   data?: QuizNameAndPackId[];
 }
 
+interface QuizQuestion {
+  question: string;
+  answer: string;
+  quiz_name: string;
+}
+
+interface GetQuizResult {
+  success: boolean;
+  message: string;
+  data?: QuizQuestion[];
+}
+
 export async function renameQuiz(input: {
   pack_id: string;
   new_name: string;
@@ -191,6 +203,57 @@ export async function getUniqueQuizNames(): Promise<GetUniqueQuizNamesResult> {
         error instanceof Error
           ? error.message
           : 'An unknown error occurred while fetching quiz names.',
+    };
+  }
+}
+
+export async function getQuizByPackId(pack_id: string): Promise<GetQuizResult> {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      return {
+        success: false,
+        message: 'You must be logged in to view a quiz.',
+      };
+    }
+
+    const { data, error } = await supabase
+      .from('quizzes')
+      .select('question, answer, quiz_name')
+      .eq('pack_id', pack_id)
+      .eq('user_id', userData.user.id);
+
+    if (error) {
+      console.error('Error fetching quiz data:', error);
+      return {
+        success: false,
+        message: `Failed to fetch quiz data: ${error.message}`,
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        message: 'Quiz not found or you do not have permission to view it.',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Quiz data fetched successfully.',
+      data: data as QuizQuestion[],
+    };
+  } catch (error) {
+    console.error('Error in getQuizByPackId action:', error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'An unknown error occurred while fetching the quiz.',
     };
   }
 }

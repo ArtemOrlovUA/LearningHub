@@ -251,7 +251,7 @@ export function QuizGenerator({
         </button>
         <button
           onClick={handleResetPrompt}
-          disabled={isLoading}
+          disabled={isLoading || !prompt}
           className="w-full text-center py-2 px-4 border border-red-500 text-red-300 rounded-md hover:bg-red-700 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
           Reset Text
         </button>
@@ -286,7 +286,7 @@ export function QuizGenerator({
         </div>
       )}
 
-      {quizGenerated && quizName && (
+      {quizGenerated && quizName ? (
         <div className="mt-10 text-center">
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
             <h2 className="text-xl font-bold mb-2">Quiz Generated Successfully!</h2>
@@ -298,6 +298,11 @@ export function QuizGenerator({
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 ease-in-out">
             Go to My Quizzes
           </button>
+        </div>
+      ) : (
+        <div className="mt-10">
+          <div className="text-center text-slate-400">No quiz to display.</div>
+          <div className="text-center text-slate-400 mt-1">Generate quiz to get started!</div>
         </div>
       )}
     </>

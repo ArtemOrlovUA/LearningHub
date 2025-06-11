@@ -4,6 +4,11 @@ import { createClient } from '@/app/utils/server';
 
 import FlashcardsSection from '@/app/_components/FlashcardsSection';
 
+export const metadata = {
+  title: 'My Flashcards',
+  description: 'View your flashcards',
+};
+
 export default async function MyFlashcardsPage({
   searchParams,
 }: {

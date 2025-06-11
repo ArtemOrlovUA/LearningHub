@@ -76,7 +76,10 @@ export default function Header() {
             LearningHub
           </Link>
 
-          <div className="hidden md:flex ml-[4.5rem] space-x-6 items-center">
+          <div
+            className={`hidden md:flex ${
+              isLoggedIn ? 'ml-[4.5rem]' : 'ml-[2rem]'
+            }  space-x-6 items-center`}>
             {isLoggedIn &&
               userNavLinks.map((link) => (
                 <Link

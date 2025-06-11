@@ -11,12 +11,14 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^2.2.0",
+    "@reduxjs/toolkit": "^2.8.2",
     "@supabase/ssr": "^0.6.1",
     "@types/pdfjs-dist": "^2.10.378",
     "next": "15.3.2",
     "pdfjs-dist": "^5.2.133",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

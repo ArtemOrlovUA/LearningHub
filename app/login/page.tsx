@@ -58,7 +58,7 @@ export default function LoginPage() {
         </Link>
 
         <h1 className="text-center mt-4 text-[0.8rem] text-slate-400">
-          LearningHub stores your personal information and flashcards.
+          LearningHub stores your personal information, flashcards and quizzes.
         </h1>
       </>
     </div>
