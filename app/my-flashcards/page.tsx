@@ -12,7 +12,7 @@ export const metadata = {
 export default async function MyFlashcardsPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
   const cookieStore = cookies();
   const supabase = await createClient(cookieStore);
@@ -26,7 +26,8 @@ export default async function MyFlashcardsPage({
     redirect('/login');
   }
 
-  const page = Number(searchParams?.page) > 0 ? Number(searchParams.page) : 1;
+  const params = await searchParams;
+  const page = Number(params?.page) > 0 ? Number(params.page) : 1;
 
   return (
     <div className="max-w-3xl mx-auto my-2 px-4">

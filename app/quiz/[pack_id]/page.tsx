@@ -5,7 +5,8 @@ import Link from 'next/link';
 import StoreProvider from '@/app/utils/StoreProvider';
 
 export async function generateMetadata({ params }: QuizPageProps): Promise<Metadata> {
-  const result = await getQuizByPackId(params.pack_id);
+  const resolvedParams = await params;
+  const result = await getQuizByPackId(resolvedParams.pack_id);
   const quizName = result.data?.[0]?.quiz_name || 'Quiz';
   return {
     title: `Quiz: ${quizName}`,
@@ -14,13 +15,14 @@ export async function generateMetadata({ params }: QuizPageProps): Promise<Metad
 }
 
 interface QuizPageProps {
-  params: {
+  params: Promise<{
     pack_id: string;
-  };
+  }>;
 }
 
 export default async function QuizPage({ params }: QuizPageProps) {
-  const { pack_id } = params;
+  const resolvedParams = await params;
+  const { pack_id } = resolvedParams;
   const result = await getQuizByPackId(pack_id);
 
   if (!result.success || !result.data) {
