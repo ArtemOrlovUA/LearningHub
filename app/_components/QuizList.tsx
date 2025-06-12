@@ -88,17 +88,18 @@ export function QuizList({ initialQuizzes }: QuizListProps) {
                   defaultValue={quiz_name}
                   placeholder="Enter new quiz name..."
                   maxLength={75}
-                  className="text-xl sm:w-full w-[85vw] font-medium mb-4 sm:mb-0 sm:mr-4 text-white bg-transparent focus:outline-none focus:ring-2 focus:ring-sky-500 rounded-md p-1"
+                  className="text-xl sm:w-full w-[85vw] font-medium mb-4 sm:mb-0 sm:mr-4 text-white bg-transparent focus:outline-none focus:ring-2 focus:ring-sky-500 rounded-md p-1 h-[2.5rem] leading-[2.5rem]"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setEditingQuizId(null);
                     }
                   }}
+                  autoComplete="off"
                 />
               ) : (
                 <h2
-                  className="text-xl sm:w-full w-[85vw] font-medium mb-4 sm:mb-0 sm:mr-4 text-white"
+                  className="text-xl sm:w-full w-[85vw] font-medium mb-4 sm:mb-0 sm:mr-4 text-white h-[2.5rem] leading-[2.5rem] flex items-center"
                   title={quiz_name}>
                   {quiz_name}
                 </h2>

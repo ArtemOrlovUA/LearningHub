@@ -52,7 +52,7 @@ Your goals are:
     *   Each subsequent element must be a single quiz item string in the specified format.
     *   Do not include any extra text, explanations, or formatting outside of the JSON array.
 
-7.  **Limit Quantity:** Generate a maximum of {{MAX_QUESTIONS}} quiz questions, focusing on the most important content.
+7.  **Limit Quantity:** Generate exactly 15 quiz questions, focusing on the most important content.
 
 **Example of a valid output array:**
 [
@@ -138,13 +138,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const availableToGenerate = qLimit - qCurrent;
-    let instructions = QUIZ_INSTRUCTIONS;
-    const MAX_QUESTIONS_PER_QUIZ = availableToGenerate >= 15 ? 15 : availableToGenerate;
+    const MAX_QUESTIONS_PER_QUIZ = 15;
 
-    instructions = instructions.replace('{{MAX_QUESTIONS}}', MAX_QUESTIONS_PER_QUIZ.toString());
-
-    const customPrompt = `${instructions}
+    const customPrompt = `${QUIZ_INSTRUCTIONS}
 ${prompt}
 <<<USER_TEXT_END>>>`;
 

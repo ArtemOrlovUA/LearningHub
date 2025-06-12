@@ -18,7 +18,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col pb-[10rem] items-center justify-center h-screen bg-black text-slate-100">
+    <div className="flex flex-col pb-[5rem] items-center justify-center h-full bg-black text-slate-100">
       <>
         <h1 className="text-3xl font-bold mb-8 text-white">To continue, please sign in</h1>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
           Back to homepage
         </Link>
 
-        <h1 className="text-center mt-4 text-[0.8rem] text-slate-400">
+        <h1 className="text-center mt-4 px-[1rem] text-[1rem] text-slate-400">
           LearningHub stores your personal information, flashcards and quizzes.
         </h1>
       </>
