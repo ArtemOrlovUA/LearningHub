@@ -67,7 +67,7 @@ export default function Header() {
 
   return (
     <>
-      <nav className="bg-black text-white py-4 px-6 md:px-10 relative top-0 left-0 right-0 z-50 shadow-md">
+      <nav className="bg-black text-white py-4 px-6 lg:px-10 relative top-0 left-0 right-0 z-50 shadow-lg">
         <div className="container mx-auto flex items-center justify-between">
           <Link
             href="/"
@@ -77,7 +77,7 @@ export default function Header() {
           </Link>
 
           <div
-            className={`hidden md:flex ${
+            className={`hidden lg:flex ${
               isLoggedIn ? 'ml-[4.5rem]' : 'ml-[2rem]'
             }  space-x-6 items-center`}>
             {isLoggedIn &&
@@ -99,7 +99,7 @@ export default function Header() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center space-x-4 min-w-[200px] justify-end">
+          <div className="hidden lg:flex items-center space-x-4 min-w-[200px] justify-end">
             {authLoading ? (
               <span className="text-sm text-gray-400">Loading...</span>
             ) : isLoggedIn && user ? (
@@ -107,7 +107,7 @@ export default function Header() {
                 <Link
                   href="/account"
                   aria-label="User Account"
-                  className="flex items-center space-x-2 p-1 rounded-md hover:bg-gray-700 transition-colors duration-200">
+                  className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-700 transition-colors duration-200">
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
@@ -118,24 +118,24 @@ export default function Header() {
                     <UserIcon className="h-6 w-6 text-white" />
                   )}
                 </Link>
-                {fullName && <span className="text-sm hidden md:inline">{fullName}</span>}
+                {fullName && <span className="text-sm hidden lg:inline">{fullName}</span>}
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-all duration-300 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </button>
               </>
             ) : (
               <Link
                 href="/login"
-                className="bg-white text-black font-semibold py-2 px-4 rounded-md text-sm hover:bg-gray-200 transition-all duration-300 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                className="bg-white text-black font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-200 transition-all duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
                 Log in
               </Link>
             )}
           </div>
 
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button onClick={toggleMobileMenu} aria-label="Toggle menu" disabled={isLoggingOut}>
               {isMobileMenuOpen ? (
                 <XMarkIcon className="h-8 w-8 text-white" />
@@ -149,7 +149,7 @@ export default function Header() {
 
       {/* Mobile Menu Container */}
       <div
-        className={`md:hidden fixed inset-0 z-40 bg-black bg-opacity-95 text-white flex flex-col pt-[calc(4rem+1px)] transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-0 z-40 bg-black bg-opacity-95 text-white flex flex-col pt-[calc(4rem+1px)] transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
         <div className="container mx-auto px-6 py-4 flex flex-col h-full">
@@ -197,14 +197,14 @@ export default function Header() {
                 </div>
                 <Link
                   href="/account"
-                  className="block w-full text-left py-3 px-3 text-lg rounded-md hover:bg-gray-800 transition-colors duration-200"
+                  className="block w-full text-left py-3 px-3 text-lg rounded-lg hover:bg-gray-800 transition-colors duration-200"
                   onClick={toggleMobileMenu}>
                   Account Settings
                 </Link>
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="flex items-center justify-between w-full text-left py-3 px-3 text-lg rounded-md hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="flex items-center justify-between w-full text-left py-3 px-3 text-lg rounded-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                   <span>{isLoggingOut ? 'Logging out...' : 'Log Out'}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +225,7 @@ export default function Header() {
               <Link
                 href="/login"
                 onClick={toggleMobileMenu}
-                className="block w-full bg-white text-black font-semibold py-3 px-6 rounded-lg text-lg text-center hover:bg-gray-200 transition-all duration-300 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                className="block w-full bg-white text-black font-semibold py-3 px-6 rounded-lg text-lg text-center hover:bg-gray-200 transition-all duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
                 Log in
               </Link>
             )}
