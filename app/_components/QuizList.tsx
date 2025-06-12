@@ -99,7 +99,7 @@ export function QuizList({ initialQuizzes }: QuizListProps) {
                 />
               ) : (
                 <h2
-                  className="text-xl sm:w-full w-[85vw] font-medium mb-4 sm:mb-0 sm:mr-4 text-white h-[2.5rem] leading-[2.5rem] flex items-center"
+                  className="text-xl sm:w-full w-[85vw] font-medium mb-[1.5rem] sm:mb-0 sm:mr-4 text-white min-h-[2.5rem] leading-normal py-[0.3rem]"
                   title={quiz_name}>
                   {quiz_name}
                 </h2>
