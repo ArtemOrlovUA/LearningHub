@@ -25,9 +25,9 @@ export default function PaginationControls({
     const container = document.querySelector(targetSelector);
 
     if (container) {
-      container.scrollTo({ top: 0, behavior: 'smooth' });
+      container.scrollTo({ top: 0, behavior: 'instant' });
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   };
 
