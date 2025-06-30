@@ -12,17 +12,15 @@ export default function PricingPage() {
       planName: 'Hobby',
       price: 'Free',
       priceFrequency: 'No payment required',
-      features: ['120 flashcards per month'],
-      buttonText: 'Get Started',
-      buttonLink: '/login',
+      features: ['120 flashcards per month', '15 quizzes per month'],
+      buttonText: 'Current Plan',
     },
     pro: {
       planName: 'Pro',
-      price: '20',
+      price: '10',
       priceFrequency: '/month',
-      highlightText: 'Even more flashcards!',
-      features: ['500 flashcards per month', '500 answers per month'],
-      buttonText: 'Upgrade to Pro',
+      highlightText: 'Even more flashcards and quizzes!',
+      features: ['500 flashcards per month', '50 quizzes per month'],
       buttonLink: '/',
       isHighlighted: true,
     },
@@ -43,7 +41,6 @@ export default function PricingPage() {
             priceFrequency={plans.free.priceFrequency}
             features={plans.free.features}
             buttonText={plans.free.buttonText}
-            buttonLink={plans.free.buttonLink}
           />
           <PlanCard
             planName={plans.pro.planName}
@@ -51,8 +48,6 @@ export default function PricingPage() {
             priceFrequency={plans.pro.priceFrequency}
             highlightText={plans.pro.highlightText}
             features={plans.pro.features}
-            buttonText={plans.pro.buttonText}
-            buttonLink={plans.pro.buttonLink}
             isHighlighted={plans.pro.isHighlighted}
           />
         </div>

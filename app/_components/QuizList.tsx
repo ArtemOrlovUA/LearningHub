@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QuizActions } from './QuizActionsButtons';
 import { renameQuiz } from '@/app/actions/quizActions';
 
@@ -17,6 +17,11 @@ export function QuizList({ initialQuizzes }: QuizListProps) {
   const [quizzes, setQuizzes] = useState<QuizNameAndPackId[]>(initialQuizzes);
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
   const [renamingPackId, setRenamingPackId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setQuizzes(initialQuizzes);
+    setEditingQuizId(null);
+  }, [initialQuizzes]);
 
   function handleQuizDeleted(pack_id: string) {
     setQuizzes((prevQuizzes) => prevQuizzes.filter((quiz) => quiz.pack_id !== pack_id));

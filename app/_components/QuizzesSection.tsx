@@ -1,20 +1,20 @@
-import { getPaginatedFlashcards } from '@/app/actions/flashcardsActions';
-import FlashList from '@/app/_components/FlashList';
+import { getPaginatedQuizNames } from '@/app/actions/quizActions';
+import { QuizList } from '@/app/_components/QuizList';
 import Link from 'next/link';
 
-interface FlashcardsSectionProps {
+interface QuizzesSectionProps {
   page: number;
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
-export default async function FlashcardsSection({ page }: FlashcardsSectionProps) {
-  const result = await getPaginatedFlashcards(page, PAGE_SIZE);
+export default async function QuizzesSection({ page }: QuizzesSectionProps) {
+  const result = await getPaginatedQuizNames(page, PAGE_SIZE);
 
   if (!result.success) {
     return (
       <p className="text-red-600 text-center mt-8">
-        Error loading your flashcards. Please try refreshing the page.
+        Error loading your quizzes. Please try refreshing the page.
       </p>
     );
   }
@@ -23,7 +23,7 @@ export default async function FlashcardsSection({ page }: FlashcardsSectionProps
     const totalPages = result.count ? Math.ceil(result.count / PAGE_SIZE) : 1;
     return (
       <div>
-        <FlashList flashcards={result.data} />
+        <QuizList initialQuizzes={result.data} />
         {totalPages > 1 && (
           <div className="flex justify-center gap-4 my-8">
             <Link
@@ -56,7 +56,7 @@ export default async function FlashcardsSection({ page }: FlashcardsSectionProps
 
   return (
     <p className="text-center mt-8 text-lg text-slate-300">
-      You haven&apos;t created any flashcards yet. <br />
+      You haven&apos;t created any quizzes yet. <br />
       Go to the{' '}
       <Link href="/learn" className="text-sky-400 hover:text-sky-300 font-medium">
         Learn page

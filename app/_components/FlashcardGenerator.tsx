@@ -31,11 +31,14 @@ export function FlashcardGenerator({
   const [prompt, setPrompt] = useState('');
   const [flashcards, setFlashcards] = useState<FlashcardData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pdfJsApi, setPdfJsApi] = useState<typeof import('pdfjs-dist') | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef<number>(0);
+
+  const MAX_PROMPT_LENGTH = 250000;
 
   useEffect(() => {
     const initPdfJs = async () => {
@@ -56,7 +59,7 @@ export function FlashcardGenerator({
       setError('PDF library is still loading. Please try again in a moment.');
       return;
     }
-    setIsLoading(true);
+    setIsPdfLoading(true);
     setPrompt('Processing PDF...');
     setError(null);
 
@@ -73,13 +76,19 @@ export function FlashcardGenerator({
             .map((item: TextItem) => item.str)
             .join(' ') + '\n';
       }
-      setPrompt(fullText.trim());
+
+      if (fullText.trim().length < MAX_PROMPT_LENGTH) {
+        setPrompt(fullText.trim());
+      } else {
+        setError('PDF is too large. Please select a smaller file.');
+        setPrompt('');
+      }
     } catch (pdfError) {
       console.error('Error processing PDF:', pdfError);
       setError("Failed to process PDF. Ensure it's a valid PDF file.");
       setPrompt('');
     } finally {
-      setIsLoading(false);
+      setIsPdfLoading(false);
     }
   };
 
@@ -220,7 +229,7 @@ export function FlashcardGenerator({
       </h2>
 
       <div
-        className={`relative mb-2 rounded-lg transition-all duration-200 ease-in-out `}
+        className={`relative rounded-lg transition-all duration-200 ease-in-out `}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -229,20 +238,35 @@ export function FlashcardGenerator({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Enter text or drop a PDF file here to create flashcards..."
-          rows={6}
-          className={`w-full p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner transition-all duration-200 ease-in-out placeholder-slate-500 ${
-            isDraggingOver
-              ? 'opacity-30 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
-              : 'opacity-100 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50'
+          rows={5}
+          maxLength={MAX_PROMPT_LENGTH}
+          className={`w-full min-h-[145.6px] p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner placeholder-slate-500 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 ${
+            isDraggingOver ? 'opacity-30' : 'opacity-100'
           }`}
           disabled={isLoading}
         />
+
         {isDraggingOver && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-100 pointer-events-none rounded-lg">
             <p className="m-0 text-lg font-bold">Drag and drop files here</p>
             <p className="mt-2 text-sm">only PDF-files are supported</p>
           </div>
         )}
+      </div>
+
+      <div className="flex justify-end my-2">
+        <span
+          className={`text-xs font-medium transition-colors duration-200 ${
+            prompt.length > MAX_PROMPT_LENGTH * 0.9
+              ? 'text-red-400'
+              : prompt.length > MAX_PROMPT_LENGTH * 0.7
+              ? 'text-yellow-400'
+              : 'text-slate-400'
+          }`}>
+          {isPdfLoading
+            ? 'Processing...'
+            : `${prompt.length.toLocaleString()}/${MAX_PROMPT_LENGTH.toLocaleString()}`}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-6">
@@ -272,8 +296,8 @@ export function FlashcardGenerator({
         onClick={handleGenerateFlashcards}
         disabled={
           isLoading ||
-          !!error ||
           !!limitsError ||
+          isPdfLoading ||
           (fc_current !== undefined &&
             fc_limit !== undefined &&
             fc_current >= fc_limit &&
@@ -284,9 +308,17 @@ export function FlashcardGenerator({
         {isLoading ? 'Generating...' : 'Generate Flashcards'}
       </button>
 
+      {error &&
+        error ===
+          '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.' && (
+          <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            Service is overloaded. Please try again later.
+          </div>
+        )}
+
       {error && (
         <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-          Error: {error}
+          {error}
         </div>
       )}
 

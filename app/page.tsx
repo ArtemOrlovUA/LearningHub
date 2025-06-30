@@ -32,16 +32,16 @@ export default function Home() {
 
       <main className="mb-12">
         <p className="text-md md:text-lg text-slate-200 max-w-xl mx-auto mb-10">
-          Whether you&apos;re diving into complex topics or reinforcing your understanding with
-          interactive flashcards, LearningHub is your dedicated partner in achieving academic and
-          professional excellence.
+          Dive into complex topics or reinforce your understanding with interactive flashcards and
+          quizzes - LearningHub is your dedicated partner in achieving academic and professional
+          excellence
         </p>
       </main>
 
       <Link
         href={isLoggedIn ? '/learn' : '/login'}
         className="bg-white text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
-        Start Your Learning Adventure
+        Start your learning adventure
       </Link>
 
       <footer className="text-slate-500 text-sm absolute bottom-0 mb-4">

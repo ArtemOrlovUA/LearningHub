@@ -36,7 +36,7 @@ export default async function MyFlashcardsPage({
       </header>
 
       <section>
-        <FlashcardsSection userId={user.id} page={page} />
+        <FlashcardsSection page={page} />
       </section>
     </div>
   );

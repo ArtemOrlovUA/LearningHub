@@ -199,3 +199,85 @@ export async function generateFlashcardAnswerAction(
     return { success: false, error: errorMessage };
   }
 }
+
+interface Flashcard {
+  id: number;
+  question: string;
+  answer: string;
+  created_at: string;
+  pack_id: string;
+}
+
+interface GetPaginatedFlashcardsResult {
+  success: boolean;
+  message: string;
+  data?: Flashcard[];
+  count?: number;
+}
+
+export async function getPaginatedFlashcards(
+  page: number,
+  pageSize: number = 10,
+): Promise<GetPaginatedFlashcardsResult> {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      return {
+        success: false,
+        message: 'You must be logged in to view your flashcards.',
+      };
+    }
+
+    const offset = (page - 1) * pageSize;
+
+    // Get count of flashcards using database function
+    const { data: countData, error: countError } = await supabase.rpc('get_flashcards_count', {
+      user_id_param: userData.user.id,
+    });
+
+    if (countError) {
+      console.error('Error fetching flashcard count:', countError);
+      return {
+        success: false,
+        message: `Failed to fetch flashcard count: ${countError.message}`,
+      };
+    }
+
+    // Get paginated flashcards using database function
+    const { data: flashcards, error: flashcardsError } = await supabase.rpc(
+      'get_paginated_flashcards',
+      {
+        user_id_param: userData.user.id,
+        limit_param: pageSize,
+        offset_param: offset,
+      },
+    );
+
+    if (flashcardsError) {
+      console.error('Error fetching paginated flashcards:', flashcardsError);
+      return {
+        success: false,
+        message: `Failed to fetch flashcards: ${flashcardsError.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Paginated flashcards fetched successfully.',
+      data: flashcards || [],
+      count: countData || 0,
+    };
+  } catch (error) {
+    console.error('Error in getPaginatedFlashcards action:', error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'An unknown error occurred while fetching flashcards.',
+    };
+  }
+}

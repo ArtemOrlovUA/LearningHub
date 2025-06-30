@@ -102,6 +102,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No prompt provided.' }, { status: 400 });
     }
 
+    if (prompt.length > 250000) {
+      return NextResponse.json(
+        { error: 'Prompt is too long. Please make it shorter. Max length is 250000 symbols.' },
+        { status: 400 },
+      );
+    }
+
+    if (prompt.length < 500) {
+      return NextResponse.json(
+        { error: 'Prompt is too short. Please make it longer. Minimum length is 500 symbols.' },
+        { status: 400 },
+      );
+    }
+
     const currentUserId = user.id;
 
     const { data: userLimitData, error: userLimitError } = await supabase

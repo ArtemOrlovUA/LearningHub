@@ -56,7 +56,7 @@ Your goals are:
 
 **Example of a valid output array:**
 [
-  "Advanced Gravity Concepts",
+  "Advanced gravity concepts",
   "Which scientist's theory of general relativity redefined our understanding of gravity as a curvature of spacetime?|||||A) Isaac Newton|||||B) Albert Einstein|||||C) Galileo Galilei|||||D) Johannes Kepler|||||B) Albert Einstein",
   "According to the law of universal gravitation, if the distance between two objects is doubled, the gravitational force between them becomes:|||||A) Four times stronger|||||B) Two times stronger|||||C) Half as strong|||||D) One-quarter as strong|||||D) One-quarter as strong"
 ]
@@ -90,6 +90,22 @@ export async function POST(request: Request) {
 
     if (!prompt) {
       return NextResponse.json({ error: 'No prompt provided.' }, { status: 400 });
+    }
+
+    if (prompt.length > 250000) {
+      return NextResponse.json(
+        {
+          error: 'Prompt is too long. Please make it shorter. Max length is 250000 symbols.',
+        },
+        { status: 400 },
+      );
+    }
+
+    if (prompt.length < 500) {
+      return NextResponse.json(
+        { error: 'Prompt is too short. Please make it longer. Minimum length is 500 symbols.' },
+        { status: 400 },
+      );
     }
 
     const currentUserId = user.id;

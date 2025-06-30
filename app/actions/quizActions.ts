@@ -207,6 +207,80 @@ export async function getUniqueQuizNames(): Promise<GetUniqueQuizNamesResult> {
   }
 }
 
+interface GetPaginatedQuizNamesResult {
+  success: boolean;
+  message: string;
+  data?: QuizNameAndPackId[];
+  count?: number;
+}
+
+export async function getPaginatedQuizNames(
+  page: number,
+  pageSize: number = 10,
+): Promise<GetPaginatedQuizNamesResult> {
+  try {
+    const cookieStore = cookies();
+    const supabase = await createClient(cookieStore);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      return {
+        success: false,
+        message: 'You must be logged in to view your quizzes.',
+      };
+    }
+
+    const offset = (page - 1) * pageSize;
+
+    // Get count of unique quiz names using a subquery
+    const { data: countData, error: countError } = await supabase.rpc('get_unique_quiz_count', {
+      user_id_param: userData.user.id,
+    });
+
+    if (countError) {
+      console.error('Error fetching quiz count:', countError);
+      return {
+        success: false,
+        message: `Failed to fetch quiz count: ${countError.message}`,
+      };
+    }
+
+    // Get paginated unique quizzes using DISTINCT ON
+    const { data: quizzes, error: quizzesError } = await supabase.rpc(
+      'get_paginated_unique_quizzes',
+      {
+        user_id_param: userData.user.id,
+        limit_param: pageSize,
+        offset_param: offset,
+      },
+    );
+
+    if (quizzesError) {
+      console.error('Error fetching paginated quizzes:', quizzesError);
+      return {
+        success: false,
+        message: `Failed to fetch quizzes: ${quizzesError.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Paginated quiz names fetched successfully.',
+      data: quizzes || [],
+      count: countData || 0,
+    };
+  } catch (error) {
+    console.error('Error in getPaginatedQuizNames action:', error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'An unknown error occurred while fetching quiz names.',
+    };
+  }
+}
+
 export async function getQuizByPackId(pack_id: string): Promise<GetQuizResult> {
   try {
     const cookieStore = cookies();

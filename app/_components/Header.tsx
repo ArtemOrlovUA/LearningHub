@@ -135,7 +135,7 @@ export default function Header() {
             )}
           </div>
 
-          <div className="lg:hidden">
+          <div className="lg:hidden flex justify-center">
             <button onClick={toggleMobileMenu} aria-label="Toggle menu" disabled={isLoggingOut}>
               {isMobileMenuOpen ? (
                 <XMarkIcon className="h-8 w-8 text-white" />

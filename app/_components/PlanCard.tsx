@@ -7,7 +7,7 @@ interface PlanCardProps {
   price: string;
   priceFrequency?: string;
   features: string[];
-  buttonText: string;
+  buttonText?: string;
   buttonLink?: string;
   onButtonClick?: () => void;
   isHighlighted?: boolean;
@@ -43,6 +43,8 @@ export default function PlanCard({
   const featureTextColor = isHighlighted ? 'text-purple-100' : 'text-slate-300';
 
   const renderButton = () => {
+    if (!buttonText) return null;
+
     const buttonClasses = `${buttonBaseStyle} ${buttonHighlightedStyle}`;
     if (buttonLink) {
       return (
@@ -89,7 +91,7 @@ export default function PlanCard({
 
       <ul className="space-y-2 mb-6 flex-grow">
         {features.map((feature, index) => (
-          <li key={index} className={`flex items-start ${featureTextColor}`}>
+          <li key={index} className={`flex items-center ${featureTextColor}`}>
             <CheckIcon
               className={`h-5 w-5 mr-2 flex-shrink-0 ${
                 isHighlighted ? 'text-purple-200' : 'text-green-400'
