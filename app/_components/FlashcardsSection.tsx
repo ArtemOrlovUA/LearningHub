@@ -1,6 +1,7 @@
 import { getPaginatedFlashcards } from '@/app/actions/flashcardsActions';
 import FlashList from '@/app/_components/FlashList';
 import Link from 'next/link';
+import PaginationControls from '@/app/_components/PaginationControls';
 
 interface FlashcardsSectionProps {
   page: number;
@@ -24,34 +25,7 @@ export default async function FlashcardsSection({ page }: FlashcardsSectionProps
     return (
       <div>
         <FlashList flashcards={result.data} />
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-4 my-8">
-            <Link
-              href={`?page=${page - 1}`}
-              scroll={true}
-              className={`px-5 py-3 w-[7rem] text-center rounded border border-gray-600 flex justify-center items-center text-slate-300 hover:bg-gray-800 transition-colors duration-200 ${
-                page <= 1 ? 'opacity-50 pointer-events-none' : ''
-              }`}
-              aria-disabled={page <= 1}>
-              Previous
-            </Link>
-            <span className="px-4 py-2 md:space-x-1 flex md:flex-row flex-col text-center justify-center items-center text-slate-400">
-              <p className="text-sm text-center">Page </p>
-              <p className="text-sm font-bold">
-                {page} of {totalPages}
-              </p>
-            </span>
-            <Link
-              href={`?page=${page + 1}`}
-              scroll={true}
-              className={`px-5 py-3 w-[7rem] text-center rounded border border-gray-600 flex justify-center items-center text-slate-300 hover:bg-gray-800 transition-colors duration-200 ${
-                page >= totalPages ? 'opacity-50 pointer-events-none' : ''
-              }`}
-              aria-disabled={page >= totalPages}>
-              Next
-            </Link>
-          </div>
-        )}
+        {totalPages > 1 && <PaginationControls currentPage={page} totalPages={totalPages} />}
       </div>
     );
   }
