@@ -28,6 +28,7 @@ export default async function QuizzesSection({ page }: QuizzesSectionProps) {
           <div className="flex justify-center gap-4 my-8">
             <Link
               href={`?page=${page - 1}`}
+              scroll={true}
               className={`px-5 py-3 w-[7rem] text-center rounded border border-gray-600 flex justify-center items-center text-slate-300 hover:bg-gray-800 transition-colors duration-200 ${
                 page <= 1 ? 'opacity-50 pointer-events-none' : ''
               }`}
@@ -42,6 +43,7 @@ export default async function QuizzesSection({ page }: QuizzesSectionProps) {
             </span>
             <Link
               href={`?page=${page + 1}`}
+              scroll={true}
               className={`px-5 py-3 w-[7rem] text-center rounded border border-gray-600 flex justify-center items-center text-slate-300 hover:bg-gray-800 transition-colors duration-200 ${
                 page >= totalPages ? 'opacity-50 pointer-events-none' : ''
               }`}
