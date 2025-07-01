@@ -307,7 +307,7 @@ export function QuizGenerator({
           {error ===
           '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.'
             ? 'Service is overloaded. Please try again later.'
-            : `Error: ${error}`}
+            : error}
         </div>
       )}
 

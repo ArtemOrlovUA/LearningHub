@@ -7,7 +7,7 @@ interface QuizzesSectionProps {
   page: number;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export default async function QuizzesSection({ page }: QuizzesSectionProps) {
   const result = await getPaginatedQuizNames(page, PAGE_SIZE);
