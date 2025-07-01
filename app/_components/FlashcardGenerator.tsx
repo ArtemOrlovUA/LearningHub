@@ -243,7 +243,7 @@ export function FlashcardGenerator({
           className={`w-full min-h-[145.6px] p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner placeholder-slate-500 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 ${
             isDraggingOver ? 'opacity-30' : 'opacity-100'
           }`}
-          disabled={isLoading}
+          disabled={isLoading || isPdfLoading}
         />
 
         {isDraggingOver && (
