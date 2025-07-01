@@ -57,7 +57,7 @@ export default function PricingPage() {
         <p>All prices are in USD. You can cancel your subscription at any time.</p>
         <p className="mt-2">
           Need a custom plan?{' '}
-          <Link href="/contact" className="text-blue-400 hover:text-blue-300">
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             Contact us
           </Link>
           .

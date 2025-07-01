@@ -1,7 +1,6 @@
 import { getQuizByPackId } from '@/app/actions/quizActions';
 import type { Metadata } from 'next';
 import Quiz from '../../_components/Quiz';
-import Link from 'next/link';
 import StoreProvider from '@/app/utils/StoreProvider';
 
 export async function generateMetadata({ params }: QuizPageProps): Promise<Metadata> {
@@ -30,11 +29,6 @@ export default async function QuizPage({ params }: QuizPageProps) {
       <div className="max-w-3xl mx-auto my-10 px-4 text-white text-center">
         <h1 className="text-3xl font-bold text-red-500 mb-4">Error</h1>
         <p className="text-lg mb-6">{result.message}</p>
-        <Link
-          href="/my-quizzes"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 ease-in-out">
-          Go to My Quizzes
-        </Link>
       </div>
     );
   }

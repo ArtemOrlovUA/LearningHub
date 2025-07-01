@@ -64,6 +64,62 @@ Your goals are:
 Now, here is the user's text. Read it carefully and output only the array with the quiz name and questions, adhering to all instructions above:
 <<<USER_TEXT_START>>>`;
 
+const TOPIC_QUIZ_INSTRUCTIONS = `You are an Expert Exam Designer, an AI assistant specializing in creating comprehensive multiple-choice questions for any given topic. Your task is to generate the most important and exam-likely questions that would be essential for someone studying this topic. ALWAYS CREATE QUIZZES IN ENGLISH.
+
+Your goals are:
+
+1.  **Identify Core Knowledge Areas:** For the given topic, identify and cover the **most important and exam-likely** knowledge areas, including:
+    *   Key individuals (names, roles, contributions, pioneers in the field)
+    *   Significant dates, years, and chronological events
+    *   Fundamental definitions, concepts, and principles
+    *   Important processes, mechanisms, and relationships
+    *   Essential formulas, equations, and calculations (where applicable)
+    *   Major historical events, discoveries, and milestones
+    *   Geographic locations and their significance (where relevant)
+    *   Current applications, implications, and real-world examples
+    *   Common misconceptions and frequently confused concepts
+
+2.  **Create High-Quality Multiple-Choice Questions:**
+    *   Each question must have four options.
+    *   There must be only **one** definitively correct answer.
+    *   The incorrect options (distractors) should be plausible and based on common misconceptions or related concepts to truly test understanding.
+    *   Questions should cover different difficulty levels and aspects of the topic.
+
+3.  **Ensure Comprehensive Coverage:**
+    *   Focus on questions that would most likely appear on academic exams, standardized tests, or professional certification exams related to this topic.
+    *   Questions must be clear, concise, and unambiguous.
+    *   The question text itself should not contain instructions like "Select the correct answer."
+
+4.  **Strict Formatting Requirements:** Each quiz item must be a single string containing six parts, separated by '|||||':
+    *   **Part 1:** The question text.
+    *   **Part 2:** The first option (e.g., "A) Option 1").
+    *   **Part 3:** The second option (e.g., "B) Option 2").
+    *   **Part 4:** The third option (e.g., "C) Option 3").
+    *   **Part 5:** The fourth option (e.g., "D) Option 4").
+    *   **Part 6:** The full text of the single correct option (e.g., "B) Option 2").
+    *   **Format:** \`Question text|||||A) Option 1|||||B) Option 2|||||C) Option 3|||||D) Option 4|||||B) Option 2\`
+
+5.  **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the topic. Do not include the word "Quiz" in the name. Name of the quiz should be in the same language as the topic provided by the user.
+
+6.  **Strict Output Format:**
+    *   You must return your answer as a single JSON-style array of strings.
+    *   The **first** element of the array must be the quiz name.
+    *   Each subsequent element must be a single quiz item string in the specified format.
+    *   Do not include any extra text, explanations, or formatting outside of the JSON array.
+
+7.  **Limit Quantity:** Generate exactly 15 quiz questions, focusing on the most crucial knowledge for the topic.
+
+**Example (English topic "Photosynthesis"):**
+Input topic: "Photosynthesis"
+Output: [
+  "Photosynthesis Fundamentals",
+  "What is the overall chemical equation for photosynthesis?|||||A) 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂|||||B) C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP|||||C) 6CO₂ + 12H₂O + light → C₆H₁₂O₆ + 6O₂ + 6H₂O|||||D) CO₂ + H₂O + light → CH₂O + O₂|||||A) 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂",
+  "In which cellular organelle does photosynthesis primarily occur in plants?|||||A) Mitochondria|||||B) Chloroplasts|||||C) Nucleus|||||D) Endoplasmic reticulum|||||B) Chloroplasts"
+]
+
+Now, generate comprehensive quiz questions for the following topic, adhering to all instructions above, especially regarding exam-relevance and comprehensive coverage:
+<<<TOPIC_START>>>`;
+
 export async function POST(request: Request) {
   const cookieStore = cookies();
   const supabase = await createClient(cookieStore);
@@ -97,13 +153,6 @@ export async function POST(request: Request) {
         {
           error: 'Prompt is too long. Please make it shorter. Max length is 250000 symbols.',
         },
-        { status: 400 },
-      );
-    }
-
-    if (prompt.length < 500) {
-      return NextResponse.json(
-        { error: 'Prompt is too short. Please make it longer. Minimum length is 500 symbols.' },
         { status: 400 },
       );
     }
@@ -156,7 +205,14 @@ export async function POST(request: Request) {
 
     const MAX_QUESTIONS_PER_QUIZ = 15;
 
-    const customPrompt = `${QUIZ_INSTRUCTIONS}
+    const isTopicMode = prompt.length < 1000;
+    const instructions = isTopicMode ? TOPIC_QUIZ_INSTRUCTIONS : QUIZ_INSTRUCTIONS;
+
+    const customPrompt = isTopicMode
+      ? `${instructions}
+${prompt}
+<<<TOPIC_END>>>`
+      : `${instructions}
 ${prompt}
 <<<USER_TEXT_END>>>`;
 
@@ -165,15 +221,17 @@ ${prompt}
     let cleanedTextForClient: string;
 
     try {
-      let processedText = rawTextFromAI
-        .trim()
-        .replace(/^```(?:json)?\s*/im, '')
-        .replace(/```$/, '')
-        .trim();
+      let processedText = rawTextFromAI.trim();
 
-      if (processedText.toLowerCase().startsWith('json\n')) {
-        processedText = processedText.substring(5).trim();
+      processedText = processedText.replace(/^```(?:json|JSON)?\s*\n?/gim, '');
+
+      processedText = processedText.replace(/\n?```\s*$/gim, '');
+
+      if (processedText.toLowerCase().startsWith('json')) {
+        processedText = processedText.substring(4).trim();
       }
+
+      processedText = processedText.trim();
 
       const quizArray: string[] = JSON.parse(processedText);
       const quizName = quizArray[0] || 'Untitled Quiz';

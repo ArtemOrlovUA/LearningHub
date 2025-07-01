@@ -20,10 +20,10 @@ const featuresData = [
     imageUrl: '/YtP4WG6lctSvaD_hp_ZtX_1260f822750c4fe69f1e558427a57ba0.png',
   },
   {
-    id: 'spaced-repetition',
-    title: 'Spaced Repetition',
-    description: 'Optimize your learning with our spaced repetition system.',
-    imageUrl: '/vAsNcirDtHNoXKmJ2f4lf_7e6e46f52517498da0d3f0adde2a989d.png',
+    id: 'quizzes',
+    title: 'Quizzes',
+    description: 'Create quizzes that will help you test your knowledge.',
+    imageUrl: '/b7ef0887-537f-4537-b356-eb35fe18fa85-Photo.png',
   },
   {
     id: 'flashcards-on-the-go',

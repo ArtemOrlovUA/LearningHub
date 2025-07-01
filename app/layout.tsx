@@ -11,8 +11,8 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Learning Hub',
-    template: 'Learning Hub - %s',
+    default: 'LearningHub',
+    template: 'LearningHub - %s',
   },
   description: 'Your ultimate destination for learning.',
   icons: [{ url: '/logo-main.png', type: 'image/png' }],

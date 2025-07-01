@@ -302,17 +302,12 @@ export function QuizGenerator({
         {isLoading ? 'Generating...' : 'Generate Quiz'}
       </button>
 
-      {error &&
-        error ===
-          '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.' && (
-          <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-            Service is overloaded. Please try again later.
-          </div>
-        )}
-
       {error && (
         <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-          Error: {error}
+          {error ===
+          '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.'
+            ? 'Service is overloaded. Please try again later.'
+            : `Error: ${error}`}
         </div>
       )}
 
