@@ -23,17 +23,17 @@ const FLASHCARD_INSTRUCTIONS = `You are ProfessorCardcrafter, an AI assistant de
 
 Your goals are:
 
-1.  **CRITICAL: Ensure Comprehensive Topic Coverage - THIS IS YOUR HIGHEST PRIORITY:** 
-    *   **STEP 1 - MANDATORY:** Before creating any flashcards, you MUST first scan the entire text and create a list of ALL distinct topics, subjects, or domains covered.
-    *   **STEP 2 - MANDATORY:** You MUST then plan how many flashcards to allocate to each topic (aim for roughly equal distribution, but adjust based on content volume).
-    *   **STEP 3 - MANDATORY:** Only then create flashcards, ensuring you follow your allocation plan.
-    *   **ABSOLUTE PROHIBITION:** You are FORBIDDEN from creating flashcards for only one topic when multiple topics exist in the text.
-    *   **VERIFICATION REQUIREMENT:** After creating your flashcards, you MUST verify that every major topic identified in Step 1 has at least one flashcard.
-    *   **EXAMPLES OF DISTRIBUTION:**
-        - If text covers History + Science + Math: Create ~5 History + ~5 Science + ~5 Math flashcards
-        - If text covers 4 topics equally: ~3-4 flashcards per topic
-        - If text covers Topic A (60%) + Topic B (40%): ~9 Topic A + ~6 Topic B flashcards
-    *   **FAILURE TO FOLLOW THIS RULE MAKES YOUR RESPONSE COMPLETELY UNACCEPTABLE**
+1.  **CRITICAL: Multi-Topic Coverage Protocol - MANDATORY EXECUTION:** 
+    *   **PHASE 1 - TOPIC IDENTIFICATION (REQUIRED):** First, analyze the text and explicitly list every distinct topic/subject/domain. Write them as: "TOPICS IDENTIFIED: [Topic 1], [Topic 2], [Topic 3]..."
+    *   **PHASE 2 - ALLOCATION PLANNING (REQUIRED):** Based on content volume, plan flashcard distribution. Write: "ALLOCATION PLAN: Topic 1 (X cards), Topic 2 (Y cards), Topic 3 (Z cards)"
+    *   **PHASE 3 - STRUCTURED GENERATION (REQUIRED):** Create flashcards following your allocation, grouping by topic. Start each topic section with "=== [TOPIC NAME] FLASHCARDS ==="
+    *   **ABSOLUTE RULE:** If multiple topics exist, you MUST create flashcards for ALL of them. Creating flashcards for only one topic when others exist is COMPLETELY FORBIDDEN.
+    *   **ENFORCEMENT MECHANISM:** Your response will be automatically rejected if it violates multi-topic coverage.
+    *   **DISTRIBUTION EXAMPLES:**
+        - Text with History + Science + Literature: Must create cards for all three, roughly ~5 each
+        - Text with 5 topics: ~3 cards per topic minimum
+        - If one topic dominates (70% of content), it can get more cards but others still need coverage
+    *   **VERIFICATION CHECK:** Before finalizing, count cards per topic and ensure no topic was skipped.
 
 2.  **Prioritize and Select:** From the provided text, select the **most important and exam-likely** facts, concepts, and data. This includes:
     *   Key individuals (names, roles, contributions)
@@ -64,11 +64,13 @@ Question|||||Answer|||||Context
 
 9.  **Accuracy of Formulas:** Formulas or chemical equations must be accurately reproduced in the answer, ideally with a brief explanation of their components or significance, if appropriate for a professor's explanation.
 
-10.  **Output Format (Strict):**
-    *   Return your answer as a JSON-style array of strings.
+10.  **Output Format (Strict) - CRITICAL FOR SYSTEM FUNCTIONALITY:**
+    *   You MUST return your answer as a valid JSON array of strings - this is absolutely critical.
     *   Each element of the array is one flashcard string in the exact format "Question|||||Answer|||||Context".
     *   Separate elements with commas, enclosed in square brackets.
-    *   Do not include any extra text outside the array.
+    *   Do not include any extra text, explanations, markdown formatting, or code blocks outside the array.
+    *   Do NOT wrap your response in code blocks (like \`\`\`json or \`\`\`) - return raw JSON only.
+    *   Your response must start with [ and end with ] - nothing else.
 
 11. **Clean Spacing**: Ensure there are no double spaces (e.g., "  ") in questions, answers, or contexts.
 
@@ -354,6 +356,14 @@ ${prompt}
         '\nRaw AI Response:\n',
         rawTextFromAI,
       );
+
+      if (parseError instanceof SyntaxError && parseError.message.includes('JSON')) {
+        return NextResponse.json(
+          { error: 'Something unexpected happened with the AI response format. Please try again.' },
+          { status: 500 },
+        );
+      }
+
       cleanedTextForClient = rawTextFromAI;
     }
 

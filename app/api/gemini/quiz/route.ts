@@ -54,11 +54,13 @@ Your goals are:
 
 6.  **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the content of the text. Do not include the word "Quiz" in the name. Name of the quiz should be in the same language as the language of user text.
 
-7.  **Strict Output Format:**
-    *   You must return your answer as a single JSON-style array of strings.
+7.  **Strict Output Format - CRITICAL FOR SYSTEM FUNCTIONALITY:**
+    *   You MUST return your answer as a valid JSON array of strings - this is absolutely critical.
     *   The **first** element of the array must be the quiz name.
     *   Each subsequent element must be a single quiz item string in the specified format.
-    *   Do not include any extra text, explanations, or formatting outside of the JSON array.
+    *   Do not include any extra text, explanations, markdown formatting, or code blocks outside of the JSON array.
+    *   Do NOT wrap your response in code blocks (like \`\`\`json or \`\`\`) - return raw JSON only.
+    *   Your response must start with [ and end with ] - nothing else.
 
 8.  **Limit Quantity:** Generate exactly 15 quiz questions, focusing on the most important content from all topics present.
 
@@ -322,6 +324,14 @@ ${prompt}
         '\nRaw AI Response:\n',
         rawTextFromAI,
       );
+
+      if (parseError instanceof SyntaxError && parseError.message.includes('JSON')) {
+        return NextResponse.json(
+          { error: 'Something unexpected happened with the AI response format. Please try again.' },
+          { status: 500 },
+        );
+      }
+
       cleanedTextForClient = rawTextFromAI;
     }
 
