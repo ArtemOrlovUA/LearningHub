@@ -4,6 +4,7 @@ import { useState, DragEvent, useEffect, useRef } from 'react';
 import FlashList from '@/app/_components/FlashList';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import type { User } from '@supabase/supabase-js';
+import Image from 'next/image';
 
 interface FlashcardData {
   id: number;
@@ -20,6 +21,12 @@ interface FlashcardGeneratorProps {
   refetchLimits: (() => Promise<void>) | undefined;
 }
 
+interface PastedPDF {
+  fileName: string;
+  text: string;
+  id: string;
+}
+
 export function FlashcardGenerator({
   user,
   fc_limit,
@@ -28,7 +35,7 @@ export function FlashcardGenerator({
   limitsError,
   refetchLimits,
 }: FlashcardGeneratorProps) {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState<string>(''); // Prompt visible to the user
   const [flashcards, setFlashcards] = useState<FlashcardData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
@@ -38,7 +45,23 @@ export function FlashcardGenerator({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef<number>(0);
 
+  const [pastedPDFs, setPastedPDFs] = useState<PastedPDF[]>([]);
+  const [finalPrompt, setFinalPrompt] = useState<string>(''); // Prompt sent to the API
+
   const MAX_PROMPT_LENGTH = 250000;
+
+  function handlePastePdf({ fileName, text, id }: PastedPDF) {
+    setPastedPDFs((prev) => [
+      ...prev,
+      { fileName: fileName.length > 12 ? `...${fileName.slice(-12)}` : fileName, text, id },
+    ]);
+    setFinalPrompt((prev) => prev + `\n\n${text}`);
+  }
+
+  function handleRemovePdf({ id, text }: PastedPDF) {
+    setPastedPDFs((prev) => prev.filter((pdf) => pdf.id !== id));
+    setFinalPrompt((prev) => prev.replace(`\n\n${text}`, ''));
+  }
 
   useEffect(() => {
     const initPdfJs = async () => {
@@ -60,7 +83,6 @@ export function FlashcardGenerator({
       return;
     }
     setIsPdfLoading(true);
-    setPrompt('Processing PDF...');
     setError(null);
 
     try {
@@ -77,8 +99,12 @@ export function FlashcardGenerator({
             .join(' ') + '\n';
       }
 
-      if (fullText.trim().length < MAX_PROMPT_LENGTH) {
-        setPrompt(fullText.trim());
+      if (fullText.trim().length < MAX_PROMPT_LENGTH - finalPrompt.length) {
+        handlePastePdf({
+          fileName: file.name,
+          text: fullText.trim(),
+          id: `${file.name}-${Date.now()}`,
+        });
       } else {
         setError('PDF is too large. Please select a smaller file.');
         setPrompt('');
@@ -93,7 +119,7 @@ export function FlashcardGenerator({
   };
 
   const handleGenerateFlashcards = async () => {
-    if (!prompt.trim()) {
+    if (!finalPrompt.trim() && !prompt.trim()) {
       setError('Please enter some text or drop a PDF to generate flashcards.');
       return;
     }
@@ -112,7 +138,7 @@ export function FlashcardGenerator({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt, userId: user.id }),
+        body: JSON.stringify({ prompt: finalPrompt + prompt, userId: user.id }),
       });
 
       if (!response.ok) {
@@ -210,6 +236,8 @@ export function FlashcardGenerator({
 
   const handleResetPrompt = () => {
     setPrompt('');
+    setFinalPrompt('');
+    setPastedPDFs([]);
     setError(null);
   };
 
@@ -239,7 +267,7 @@ export function FlashcardGenerator({
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Enter text or drop a PDF file here to create flashcards..."
           rows={5}
-          maxLength={MAX_PROMPT_LENGTH}
+          maxLength={MAX_PROMPT_LENGTH - finalPrompt.length}
           className={`w-full min-h-[145.6px] p-3 text-base bg-gray-800 text-slate-100 rounded-lg box-border resize-vertical shadow-inner placeholder-slate-500 border border-gray-600 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 ${
             isDraggingOver ? 'opacity-30' : 'opacity-100'
           }`}
@@ -257,17 +285,37 @@ export function FlashcardGenerator({
       <div className="flex justify-end my-2">
         <span
           className={`text-xs font-medium transition-colors duration-200 ${
-            prompt.length > MAX_PROMPT_LENGTH * 0.9
+            (finalPrompt + prompt).length > MAX_PROMPT_LENGTH * 0.9
               ? 'text-red-400'
-              : prompt.length > MAX_PROMPT_LENGTH * 0.7
+              : (finalPrompt + prompt).length > MAX_PROMPT_LENGTH * 0.7
               ? 'text-yellow-400'
               : 'text-slate-400'
           }`}>
           {isPdfLoading
             ? 'Processing...'
-            : `${prompt.length.toLocaleString()}/${MAX_PROMPT_LENGTH.toLocaleString()}`}
+            : `${(
+                finalPrompt + prompt
+              ).length.toLocaleString()}/${MAX_PROMPT_LENGTH.toLocaleString()}`}
         </span>
       </div>
+
+      {pastedPDFs.length > 0 && (
+        <div className="flex gap-x-[1rem] pb-[0.5rem] w-full overflow-x-auto">
+          {pastedPDFs.map((pdf) => (
+            <div
+              key={pdf.id}
+              className="flex flex-col items-center gap-2 min-w-[8rem] bg-gray-800 rounded-lg p-2">
+              <Image src="/file-pdf-color-red-icon.png" alt="PDF" width={40} height={40} />
+              <p className="text-sm text-slate-300">{pdf.fileName}</p>
+              <button
+                onClick={() => handleRemovePdf(pdf)}
+                className="text-sm text-red-400 hover:text-red-300">
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-6">
         <button
@@ -278,9 +326,9 @@ export function FlashcardGenerator({
         </button>
         <button
           onClick={handleResetPrompt}
-          disabled={isLoading || !prompt}
+          disabled={isLoading || (!finalPrompt && !prompt)}
           className="w-full text-center py-2 px-4 border border-red-500 text-red-300 rounded-md hover:bg-red-700 transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
-          Reset Text
+          Reset All
         </button>
       </div>
       <input
@@ -292,6 +340,15 @@ export function FlashcardGenerator({
         disabled={isLoading}
       />
 
+      {error && (
+        <div className="my-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+          {error ===
+          '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.'
+            ? 'Service is overloaded. Please try again later.'
+            : error}
+        </div>
+      )}
+
       <button
         onClick={handleGenerateFlashcards}
         disabled={
@@ -302,20 +359,12 @@ export function FlashcardGenerator({
             fc_limit !== undefined &&
             fc_current >= fc_limit &&
             !isLoading) ||
-          limitsLoading
+          limitsLoading ||
+          (!finalPrompt.trim() && !prompt.trim())
         }
         className="block w-full py-3 px-5 text-lg font-semibold bg-white text-black rounded-lg transition-colors duration-200 ease-in-out hover:bg-gray-200 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed">
         {isLoading ? 'Generating...' : 'Generate Flashcards'}
       </button>
-
-      {error && (
-        <div className="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-          {error ===
-          '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.'
-            ? 'Service is overloaded. Please try again later.'
-            : error}
-        </div>
-      )}
 
       <div className="mt-10">
         <FlashList flashcards={flashcards} isShowingInteractionButtons={false} />

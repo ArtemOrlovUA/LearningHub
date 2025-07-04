@@ -152,7 +152,7 @@ export default function Header() {
         className={`lg:hidden fixed inset-0 z-40 bg-black bg-opacity-95 text-white flex flex-col pt-[calc(4rem+1px)] transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
-        <div className="container mx-auto px-6 py-4 flex flex-col h-full">
+        <div className="container mx-auto px-6 md:px-0 py-4 flex flex-col h-full">
           <div className="flex flex-col space-y-5 mb-8">
             {isLoggedIn &&
               userNavLinks.map((link) => (

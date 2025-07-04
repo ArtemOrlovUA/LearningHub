@@ -40,7 +40,7 @@ export default function Home() {
 
       <Link
         href={isLoggedIn ? '/learn' : '/login'}
-        className="bg-white uppercase text-black font-semibold py-4 px-10 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+        className="bg-white text-black font-semibold py-4 md:px-10 px-6 rounded-lg text-xl shadow-xl hover:bg-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
         Start your learning adventure
       </Link>
 

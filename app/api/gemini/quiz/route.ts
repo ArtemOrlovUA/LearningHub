@@ -25,17 +25,25 @@ Your goals are:
 
 1.  **Analyze and Extract Core Concepts:** From the provided text, identify the most critical concepts, principles, and practical applications that are essential for a professional to know. Focus on information that would be heavily weighted on an exam or asked in an interview.
 
-2.  **Create High-Quality Multiple-Choice Questions:**
+2.  **CRITICAL: Ensure Comprehensive Topic Coverage:** 
+    *   **MANDATORY REQUIREMENT:** If the provided text covers multiple topics, subjects, or domains, you MUST distribute questions across ALL topics mentioned. 
+    *   **DO NOT focus only on one topic** - this is a critical error that must be avoided.
+    *   You must ensure balanced representation of all major topics present in the text.
+    *   Aim for proportional coverage based on the amount of content devoted to each topic.
+    *   **Before generating questions, first identify ALL distinct topics/subjects in the text, then ensure each topic gets appropriate question coverage.**
+    *   If there are 3 topics, distribute questions across all 3. If there are 5 topics, distribute across all 5, etc.
+
+3.  **Create High-Quality Multiple-Choice Questions:**
     *   Each question must have four options.
     *   There must be only **one** definitively correct answer.
     *   The incorrect options (distractors) should be plausible and based on common misconceptions or related concepts from the text to truly test the user's understanding.
 
-3.  **Ensure Professional-Level Value:**
+4.  **Ensure Professional-Level Value:**
     *   Questions should test a deep understanding of core concepts, not trivial details.
     *   Questions must be clear, concise, and unambiguous.
     *   The question text itself should not contain instructions like "Select the correct answer."
 
-4.  **Strict Formatting Requirements:** Each quiz item must be a single string containing six parts, separated by '|||||':
+5.  **Strict Formatting Requirements:** Each quiz item must be a single string containing six parts, separated by '|||||':
     *   **Part 1:** The question text.
     *   **Part 2:** The first option (e.g., "A) Option 1").
     *   **Part 3:** The second option (e.g., "B) Option 2").
@@ -44,15 +52,18 @@ Your goals are:
     *   **Part 6:** The full text of the single correct option (e.g., "B) Option 2").
     *   **Format:** \`Question text|||||A) Option 1|||||B) Option 2|||||C) Option 3|||||D) Option 4|||||B) Option 2\`
 
-5.  **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the content of the text. Do not include the word "Quiz" in the name. Name of the quiz should be in the same language as the language of user text.
+6.  **Quiz Name:** Generate an appropriate, descriptive name for the quiz based on the content of the text. Do not include the word "Quiz" in the name. Name of the quiz should be in the same language as the language of user text.
 
-6.  **Strict Output Format:**
+7.  **Strict Output Format:**
     *   You must return your answer as a single JSON-style array of strings.
     *   The **first** element of the array must be the quiz name.
     *   Each subsequent element must be a single quiz item string in the specified format.
     *   Do not include any extra text, explanations, or formatting outside of the JSON array.
 
-7.  **Limit Quantity:** Generate exactly 15 quiz questions, focusing on the most important content.
+8.  **Limit Quantity:** Generate exactly 15 quiz questions, focusing on the most important content from all topics present.
+
+**FINAL REMINDER - TOPIC COVERAGE IS CRITICAL:**
+Before outputting your final array, verify that you have covered ALL major topics present in the text. If the text contains multiple subjects/domains, your 15 questions must be distributed across all of them, not concentrated on just one topic.
 
 **Example of a valid output array:**
 [
