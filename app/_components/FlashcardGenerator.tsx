@@ -5,6 +5,7 @@ import FlashList from '@/app/_components/FlashList';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface FlashcardData {
   id: number;
@@ -304,7 +305,7 @@ export function FlashcardGenerator({
           {pastedPDFs.map((pdf) => (
             <div
               key={pdf.id}
-              className="flex flex-col items-center gap-2 min-w-[8rem] bg-gray-800 rounded-lg p-2">
+              className="flex flex-col items-center gap-2 min-w-[8rem] bg-gray-800 rounded-lg p-2 pt-4">
               <Image src="/file-pdf-color-red-icon.png" alt="PDF" width={40} height={40} />
               <p className="text-sm text-slate-300">{pdf.fileName}</p>
               <button
@@ -346,6 +347,21 @@ export function FlashcardGenerator({
           '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [503 Service Unavailable] The model is overloaded. Please try again later.'
             ? 'Service is overloaded. Please try again later.'
             : error}
+        </div>
+      )}
+
+      {fc_current && fc_limit && fc_current >= fc_limit && (
+        <div>
+          <div className="my-6 p-3 bg-white border border-black text-black rounded-md">
+            <p className="text-center">
+              You have reached your limit of flashcards. Please upgrade your plan to generate more.
+            </p>
+            <Link href="/pricing" className="flex justify-center">
+              <button className="bg-black text-white px-4 py-2 mt-2 rounded-md hover:bg-gray-800 transition-colors duration-200 ease-in-out">
+                Upgrade
+              </button>
+            </Link>
+          </div>
         </div>
       )}
 
